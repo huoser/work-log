@@ -24,7 +24,8 @@
             margin: 0;
             padding: 0;
             -webkit-font-smoothing: antialiased;
-            padding-bottom: calc(env(safe-area-inset-bottom) + 80px); 
+            /* 恢复正常的底部安全距离 */
+            padding-bottom: env(safe-area-inset-bottom); 
         }
 
         .header {
@@ -38,12 +39,43 @@
             z-index: 100;
         }
 
+        /* 顶部标题和保存按钮同行显示 */
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
         .header h1 {
-            margin: 0 0 12px 0;
-            font-size: 20px;
+            margin: 0;
+            font-size: 19px;
             font-weight: 600;
             letter-spacing: -0.003em;
-            text-align: center;
+        }
+
+        /* 顶部小巧的保存按钮 */
+        .header-save-btn {
+            background-color: var(--apple-blue);
+            color: white;
+            border: none;
+            border-radius: 980px;
+            padding: 6px 14px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            box-shadow: 0 2px 8px rgba(0, 113, 227, 0.3);
+            -webkit-tap-highlight-color: transparent;
+            white-space: nowrap;
+        }
+
+        .header-save-btn:active {
+            transform: scale(0.95);
+            background-color: #005bb5;
         }
 
         .filter-group {
@@ -217,37 +249,15 @@
             font-size: 15px;
             display: none;
         }
-
-        .fab-save {
-            position: fixed;
-            bottom: max(30px, env(safe-area-inset-bottom));
-            right: 20px;
-            background-color: var(--apple-blue);
-            color: white;
-            border: none;
-            border-radius: 50px;
-            padding: 14px 24px;
-            font-size: 15px;
-            font-weight: 600;
-            box-shadow: 0 4px 16px rgba(0, 113, 227, 0.4);
-            cursor: pointer;
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.3s;
-        }
-
-        .fab-save:active {
-            transform: scale(0.95);
-            background-color: #005bb5;
-        }
     </style>
 </head>
 <body>
 
 <div class="header">
-    <h1>招生工作日志协作版</h1>
+    <div class="header-top">
+        <h1>招生日志协作版</h1>
+        <button id="saveBtn" class="header-save-btn" onclick="syncDataToCloud()">🔄 连接...</button>
+    </div>
     <div class="filter-group">
         <button class="filter-btn active" onclick="filterData('all', this)">全部</button>
         <button class="filter-btn" onclick="filterData('week', this)">本周</button>
@@ -277,68 +287,12 @@
         </div>
         <div class="card-footer"><span class="footer-label">📌 备注:</span><span class="footer-content" contenteditable="true">建议附上会议照片</span></div>
     </div>
-    <div class="task-card" data-date="2026-03-27">
-        <div class="card-header"><span class="date-cell">2026-03-27</span><span class="day-cell">周五</span></div>
-        <div class="card-body">
-            <span class="tag" contenteditable="true">资料研读</span>
-            <div class="task-desc" contenteditable="true">清点学校下发的招生宣传单。组内共同学习并探讨我校核心专业的宣传亮点与就业优势，统一对外解答口径。</div>
-            <button class="copy-text-btn" onclick="copyFormattedTask(this)">📋 复制报备文字</button>
-        </div>
-        <div class="card-footer"><span class="footer-label">📌 备注:</span><span class="footer-content" contenteditable="true">无</span></div>
-    </div>
-    <div class="task-card" data-date="2026-03-30">
-        <div class="card-header"><span class="date-cell">2026-03-30</span><span class="day-cell">周一</span></div>
-        <div class="card-body">
-            <span class="tag" contenteditable="true">信息收集</span>
-            <div class="task-desc" contenteditable="true">通过多渠道初步收集自贡板仓实验中学、自贡德铭中学的基本情况（如预估毕业生人数、学校作息时间等），建立目标学校基础信息表。</div>
-            <button class="copy-text-btn" onclick="copyFormattedTask(this)">📋 复制报备文字</button>
-        </div>
-        <div class="card-footer"><span class="footer-label">📌 备注:</span><span class="footer-content" contenteditable="true">无</span></div>
-    </div>
-    <div class="task-card" data-date="2026-03-31">
-        <div class="card-header"><span class="date-cell">2026-03-31</span><span class="day-cell">周二</span></div>
-        <div class="card-body">
-            <span class="tag" contenteditable="true">实地踩点</span>
-            <div class="task-desc" contenteditable="true">前往自贡板仓实验中学进行外围踩点。摸排该校初三学生放学主要路线、家长接送聚集区及周边宣传环境，为后续地推选址做准备。</div>
-            <button class="copy-text-btn" onclick="copyFormattedTask(this)">📋 复制报备文字</button>
-        </div>
-        <div class="card-footer"><span class="footer-label">📌 备注:</span><span class="footer-content" contenteditable="true">需拍摄2-3张校门外围照片</span></div>
-    </div>
-    <div class="task-card" data-date="2026-04-01">
-        <div class="card-header"><span class="date-cell">2026-04-01</span><span class="day-cell">周三</span></div>
-        <div class="card-body">
-            <span class="tag" contenteditable="true">踩点复盘</span>
-            <div class="task-desc" contenteditable="true">汇总昨日板仓中学的实地摸排情况，评估并确定最佳的派单位置与时间段，初步拟定该校的宣传执行预案。</div>
-            <button class="copy-text-btn" onclick="copyFormattedTask(this)">📋 复制报备文字</button>
-        </div>
-        <div class="card-footer"><span class="footer-label">📌 备注:</span><span class="footer-content" contenteditable="true">无</span></div>
-    </div>
-    <div class="task-card" data-date="2026-04-02">
-        <div class="card-header"><span class="date-cell">2026-04-02</span><span class="day-cell">周四</span></div>
-        <div class="card-body">
-            <span class="tag" contenteditable="true">实地踩点</span>
-            <div class="task-desc" contenteditable="true">前往自贡德铭中学开展外围调研。实地观察学校门禁情况及放学高峰期人流特征，记录便于开展宣传工作的安全点位。</div>
-            <button class="copy-text-btn" onclick="copyFormattedTask(this)">📋 复制报备文字</button>
-        </div>
-        <div class="card-footer"><span class="footer-label">📌 备注:</span><span class="footer-content" contenteditable="true">需拍摄德铭中学校门照片</span></div>
-    </div>
-    <div class="task-card" data-date="2026-04-03">
-        <div class="card-header"><span class="date-cell">2026-04-03</span><span class="day-cell">周五</span></div>
-        <div class="card-body">
-            <span class="tag" contenteditable="true">工作周结</span>
-            <div class="task-desc" contenteditable="true">整理本周两所初中的前期调研与踩点记录，形成小组内部的“生源学校档案”。撰写本周工作日志，并规划下周的工作重点。</div>
-            <button class="copy-text-btn" onclick="copyFormattedTask(this)">📋 复制报备文字</button>
-        </div>
-        <div class="card-footer"><span class="footer-label">📌 备注:</span><span class="footer-content" contenteditable="true">需提交周报</span></div>
-    </div>
 </div>
 
 <div id="emptyState" class="empty-state">未找到所选日期的任务记录</div>
 
-<button id="saveBtn" class="fab-save" onclick="syncDataToCloud()">🔄 正在连接云端...</button>
-
 <script>
-    // 关键修改：替换为正确的 Secret Key 和 默认 API 安全码
+    // 你的 Bmob 秘钥已预填好
     Bmob.initialize("0e505e7e2db6c121", "123456");
 
     let cloudRecordId = "";
@@ -419,30 +373,15 @@
         
         try {
             const res = await query.find();
-            if (res.length === 0) {
-                // 如果数据库空，用默认数据直接渲染并上传初始化
-                const list = document.getElementById('logList');
-                list.innerHTML = document.getElementById('defaultData').innerHTML;
-                
-                const defaultData = getPageData();
-                const insertQuery = Bmob.Query("GlobalTaskLog");
-                insertQuery.set("tasksJson", JSON.stringify(defaultData));
-                const insertRes = await insertQuery.save();
-                cloudRecordId = insertRes.objectId;
-                btn.innerText = "💾 保存并同步";
-            } else {
+            if (res.length > 0) {
                 cloudRecordId = res[0].objectId;
                 const onlineData = JSON.parse(res[0].tasksJson);
                 renderPage(onlineData);
-                btn.innerText = "💾 保存并同步";
+                btn.innerText = "💾 保存";
             }
         } catch (err) {
             console.error("连接数据库失败:", err);
             btn.innerText = "❌ 连接失败";
-            alert("被 Bmob 拦截了！请务必去 Bmob 后台的“安全设置”里，把“Web 安全域名”填入星号 * 然后保存。");
-            // 加载失败时显示默认内容以防白屏
-            const list = document.getElementById('logList');
-            list.innerHTML = document.getElementById('defaultData').innerHTML;
         }
     }
 
@@ -453,7 +392,7 @@
         }
         
         const btn = document.getElementById('saveBtn');
-        btn.innerText = "⏳ 正在上传...";
+        btn.innerText = "⏳ 上传中";
         
         const currentData = getPageData();
         const query = Bmob.Query("GlobalTaskLog");
@@ -463,14 +402,14 @@
             query.set("tasksJson", JSON.stringify(currentData));
             await query.save();
             
-            btn.innerText = "✅ 同步成功！";
+            btn.innerText = "✅ 成功";
             setTimeout(() => {
-                btn.innerText = "💾 保存并同步";
+                btn.innerText = "💾 保存";
             }, 2000);
         } catch (err) {
             console.error("同步失败:", err);
-            alert("保存失败，请检查网络或后台白名单设置。");
-            btn.innerText = "💾 保存并同步";
+            alert("保存失败，请检查网络！");
+            btn.innerText = "💾 保存";
         }
     }
 

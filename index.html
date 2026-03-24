@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>招生工作日志</title>
+    <title>招生工作日志协作版</title>
+    <script src="https://unpkg.com/hydrogen-js-sdk/dist/Bmob-2.2.5.min.js"></script>
     <style>
         :root {
             --apple-blue: #0071e3;
@@ -22,11 +23,9 @@
             margin: 0;
             padding: 0;
             -webkit-font-smoothing: antialiased;
-            /* 适配苹果手机底部安全距离 */
-            padding-bottom: env(safe-area-inset-bottom); 
+            padding-bottom: calc(env(safe-area-inset-bottom) + 80px); /* 给底部按钮留出空间 */
         }
 
-        /* 顶部悬浮毛玻璃导航条 */
         .header {
             padding: 16px 20px;
             background-color: rgba(245, 245, 247, 0.85);
@@ -54,8 +53,7 @@
             flex-wrap: wrap;
         }
 
-        /* 手机端胶囊按钮调整 */
-        button {
+        button.filter-btn {
             background-color: #e8e8ed;
             border: none;
             color: var(--apple-text-main);
@@ -65,19 +63,14 @@
             font-weight: 500;
             cursor: pointer;
             transition: all 0.2s ease;
-            -webkit-tap-highlight-color: transparent; /* 去除手机点击默认高亮 */
+            -webkit-tap-highlight-color: transparent;
         }
 
-        button:active {
-            transform: scale(0.96);
-        }
-
-        button.active {
+        button.filter-btn.active {
             background-color: var(--apple-blue);
             color: #ffffff;
         }
 
-        /* 日期选择器在手机端变成更紧凑的样式 */
         .date-picker {
             display: flex;
             align-items: center;
@@ -98,14 +91,12 @@
             outline: none;
         }
 
-        /* 核心改动：卡片流容器 */
         .task-list {
             padding: 20px 16px;
             max-width: 600px;
             margin: 0 auto;
         }
 
-        /* 每一天的卡片样式 */
         .task-card {
             background: var(--apple-card-bg);
             border-radius: 18px;
@@ -115,11 +106,6 @@
             transition: transform 0.2s;
         }
 
-        .task-card:active {
-            transform: scale(0.98);
-        }
-
-        /* 卡片头部：日期和星期 */
         .card-header {
             display: flex;
             justify-content: space-between;
@@ -141,7 +127,6 @@
             font-weight: 500;
         }
 
-        /* 卡片主体：标签和内容 */
         .card-body {
             line-height: 1.6;
             font-size: 15px;
@@ -156,32 +141,44 @@
             background-color: rgba(0, 113, 227, 0.1);
             color: var(--apple-blue);
             margin-bottom: 8px;
-            vertical-align: middle;
+            outline: none;
         }
 
         .task-desc {
             color: var(--apple-text-main);
             outline: none;
+            min-height: 24px;
+        }
+        
+        /* 针对可编辑区域的选中状态优化 */
+        [contenteditable="true"]:focus {
+            background-color: #f0f8ff;
+            border-radius: 4px;
+            padding: 2px 4px;
+            margin: -2px -4px;
         }
 
-        /* 卡片底部：备注 */
         .card-footer {
             margin-top: 12px;
             padding-top: 12px;
             border-top: 1px dashed #ebebeb;
             font-size: 13px;
             color: var(--apple-text-sub);
-            outline: none;
             display: flex;
             gap: 6px;
         }
-        
-        .card-footer::before {
-            content: "📌 备注:";
+
+        .footer-label {
             font-weight: 500;
+            white-space: nowrap;
         }
 
-        /* 空状态提示 */
+        .footer-content {
+            outline: none;
+            flex-grow: 1;
+            min-height: 18px;
+        }
+
         .empty-state {
             text-align: center;
             padding: 60px 20px;
@@ -189,114 +186,225 @@
             font-size: 15px;
             display: none;
         }
+
+        /* 底部悬浮的同步按钮 */
+        .fab-save {
+            position: fixed;
+            bottom: max(30px, env(safe-area-inset-bottom));
+            right: 20px;
+            background-color: var(--apple-blue);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 14px 24px;
+            font-size: 15px;
+            font-weight: 600;
+            box-shadow: 0 4px 16px rgba(0, 113, 227, 0.4);
+            cursor: pointer;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+
+        .fab-save:active {
+            transform: scale(0.95);
+            background-color: #005bb5;
+        }
     </style>
 </head>
 <body>
 
 <div class="header">
-    <h1>招生工作日志</h1>
+    <h1>招生工作日志协作版</h1>
     <div class="filter-group">
-        <button class="active" onclick="filterData('all', this)">全部</button>
-        <button onclick="filterData('week', this)">本周</button>
-        <button onclick="filterData('month', this)">本月</button>
+        <button class="filter-btn active" onclick="filterData('all', this)">全部</button>
+        <button class="filter-btn" onclick="filterData('week', this)">本周</button>
+        <button class="filter-btn" onclick="filterData('month', this)">本月</button>
     </div>
     <div class="date-picker">
         <input type="date" id="startDate">
         <span style="color:var(--apple-text-sub); font-size:12px;">至</span>
         <input type="date" id="endDate">
-        <button onclick="filterByDate()" style="padding: 4px 10px; margin-left:4px;">筛选</button>
+        <button class="filter-btn" onclick="filterByDate()" style="padding: 4px 10px; margin-left:4px;">筛选</button>
     </div>
 </div>
 
 <div class="task-list" id="logList">
     <div class="task-card" data-date="2026-03-26">
-        <div class="card-header">
-            <span class="date-cell">2026-03-26</span>
-            <span class="day-cell">周四</span>
-        </div>
+        <div class="card-header"><span class="date-cell">2026-03-26</span><span class="day-cell">周四</span></div>
         <div class="card-body">
-            <span class="tag">工作筹备</span>
+            <span class="tag" contenteditable="true">工作筹备</span>
             <div class="task-desc" contenteditable="true">招生小组召开首次碰头会。明确组内4人具体分工，梳理现阶段任务目标，制定前期稳步推进的招生策略。</div>
         </div>
-        <div class="card-footer" contenteditable="true">建议附上会议照片</div>
+        <div class="card-footer"><span class="footer-label">📌 备注:</span><span class="footer-content" contenteditable="true">建议附上会议照片</span></div>
     </div>
-
     <div class="task-card" data-date="2026-03-27">
-        <div class="card-header">
-            <span class="date-cell">2026-03-27</span>
-            <span class="day-cell">周五</span>
-        </div>
+        <div class="card-header"><span class="date-cell">2026-03-27</span><span class="day-cell">周五</span></div>
         <div class="card-body">
-            <span class="tag">资料研读</span>
+            <span class="tag" contenteditable="true">资料研读</span>
             <div class="task-desc" contenteditable="true">清点学校下发的招生宣传单。组内共同学习并探讨我校核心专业的宣传亮点与就业优势，统一对外解答口径。</div>
         </div>
-        <div class="card-footer" contenteditable="true">无</div>
+        <div class="card-footer"><span class="footer-label">📌 备注:</span><span class="footer-content" contenteditable="true">无</span></div>
     </div>
-
     <div class="task-card" data-date="2026-03-30">
-        <div class="card-header">
-            <span class="date-cell">2026-03-30</span>
-            <span class="day-cell">周一</span>
-        </div>
+        <div class="card-header"><span class="date-cell">2026-03-30</span><span class="day-cell">周一</span></div>
         <div class="card-body">
-            <span class="tag">信息收集</span>
+            <span class="tag" contenteditable="true">信息收集</span>
             <div class="task-desc" contenteditable="true">通过多渠道初步收集自贡板仓实验中学、自贡德铭中学的基本情况（如预估毕业生人数、学校作息时间等），建立目标学校基础信息表。</div>
         </div>
-        <div class="card-footer" contenteditable="true">无</div>
+        <div class="card-footer"><span class="footer-label">📌 备注:</span><span class="footer-content" contenteditable="true">无</span></div>
     </div>
-
     <div class="task-card" data-date="2026-03-31">
-        <div class="card-header">
-            <span class="date-cell">2026-03-31</span>
-            <span class="day-cell">周二</span>
-        </div>
+        <div class="card-header"><span class="date-cell">2026-03-31</span><span class="day-cell">周二</span></div>
         <div class="card-body">
-            <span class="tag">实地踩点</span>
+            <span class="tag" contenteditable="true">实地踩点</span>
             <div class="task-desc" contenteditable="true">前往自贡板仓实验中学进行外围踩点。摸排该校初三学生放学主要路线、家长接送聚集区及周边宣传环境，为后续地推选址做准备。</div>
         </div>
-        <div class="card-footer" contenteditable="true">需拍摄2-3张校门外围照片</div>
+        <div class="card-footer"><span class="footer-label">📌 备注:</span><span class="footer-content" contenteditable="true">需拍摄2-3张校门外围照片</span></div>
     </div>
-
     <div class="task-card" data-date="2026-04-01">
-        <div class="card-header">
-            <span class="date-cell">2026-04-01</span>
-            <span class="day-cell">周三</span>
-        </div>
+        <div class="card-header"><span class="date-cell">2026-04-01</span><span class="day-cell">周三</span></div>
         <div class="card-body">
-            <span class="tag">踩点复盘</span>
+            <span class="tag" contenteditable="true">踩点复盘</span>
             <div class="task-desc" contenteditable="true">汇总昨日板仓中学的实地摸排情况，评估并确定最佳的派单位置与时间段，初步拟定该校的宣传执行预案。</div>
         </div>
-        <div class="card-footer" contenteditable="true">无</div>
+        <div class="card-footer"><span class="footer-label">📌 备注:</span><span class="footer-content" contenteditable="true">无</span></div>
     </div>
-
     <div class="task-card" data-date="2026-04-02">
-        <div class="card-header">
-            <span class="date-cell">2026-04-02</span>
-            <span class="day-cell">周四</span>
-        </div>
+        <div class="card-header"><span class="date-cell">2026-04-02</span><span class="day-cell">周四</span></div>
         <div class="card-body">
-            <span class="tag">实地踩点</span>
+            <span class="tag" contenteditable="true">实地踩点</span>
             <div class="task-desc" contenteditable="true">前往自贡德铭中学开展外围调研。实地观察学校门禁情况及放学高峰期人流特征，记录便于开展宣传工作的安全点位。</div>
         </div>
-        <div class="card-footer" contenteditable="true">需拍摄德铭中学校门照片</div>
+        <div class="card-footer"><span class="footer-label">📌 备注:</span><span class="footer-content" contenteditable="true">需拍摄德铭中学校门照片</span></div>
     </div>
-
     <div class="task-card" data-date="2026-04-03">
-        <div class="card-header">
-            <span class="date-cell">2026-04-03</span>
-            <span class="day-cell">周五</span>
-        </div>
+        <div class="card-header"><span class="date-cell">2026-04-03</span><span class="day-cell">周五</span></div>
         <div class="card-body">
-            <span class="tag">工作周结</span>
+            <span class="tag" contenteditable="true">工作周结</span>
             <div class="task-desc" contenteditable="true">整理本周两所初中的前期调研与踩点记录，形成小组内部的“生源学校档案”。撰写本周工作日志，并规划下周的工作重点。</div>
         </div>
-        <div class="card-footer" contenteditable="true">需提交周报</div>
+        <div class="card-footer"><span class="footer-label">📌 备注:</span><span class="footer-content" contenteditable="true">需提交周报</span></div>
     </div>
 </div>
 
 <div id="emptyState" class="empty-state">未找到所选日期的任务记录</div>
 
+<button id="saveBtn" class="fab-save" onclick="syncDataToCloud()">🔄 正在连接云端...</button>
+
 <script>
+    // 注入你提供的 Bmob 密钥
+    Bmob.initialize("e7011c02c13c14a8d9df946d096e458b", "fb83e8234e706f501e9bea4d5327aaec");
+
+    let cloudRecordId = ""; // 用于记录在 Bmob 上的数据行 ID
+
+    // 提取当前页面上用户修改后的数据
+    function getPageData() {
+        const cards = document.querySelectorAll('.task-card');
+        const data = [];
+        cards.forEach(card => {
+            data.push({
+                date: card.getAttribute('data-date'),
+                day: card.querySelector('.day-cell').innerText,
+                tag: card.querySelector('.tag').innerText,
+                desc: card.querySelector('.task-desc').innerText,
+                remark: card.querySelector('.footer-content').innerText
+            });
+        });
+        return data;
+    }
+
+    // 将云端拉取的数据重新渲染到页面上
+    function renderPage(data) {
+        const list = document.getElementById('logList');
+        list.innerHTML = "";
+        data.forEach(item => {
+            const html = `
+                <div class="task-card" data-date="${item.date}">
+                    <div class="card-header">
+                        <span class="date-cell">${item.date}</span>
+                        <span class="day-cell">${item.day}</span>
+                    </div>
+                    <div class="card-body">
+                        <span class="tag" contenteditable="true">${item.tag}</span>
+                        <div class="task-desc" contenteditable="true">${item.desc}</div>
+                    </div>
+                    <div class="card-footer">
+                        <span class="footer-label">📌 备注:</span>
+                        <span class="footer-content" contenteditable="true">${item.remark}</span>
+                    </div>
+                </div>
+            `;
+            list.insertAdjacentHTML('beforeend', html);
+        });
+    }
+
+    // 页面加载时：连接 Bmob 获取最新数据
+    async function loadCloudData() {
+        const btn = document.getElementById('saveBtn');
+        const query = Bmob.Query("GlobalTaskLog");
+        
+        try {
+            const res = await query.find();
+            if (res.length === 0) {
+                // 如果是新应用，数据库为空，把默认 HTML 数据直接传上去初始化
+                const defaultData = getPageData();
+                const insertQuery = Bmob.Query("GlobalTaskLog");
+                insertQuery.set("tasksJson", JSON.stringify(defaultData));
+                const insertRes = await insertQuery.save();
+                cloudRecordId = insertRes.objectId;
+                btn.innerText = "💾 保存并同步";
+            } else {
+                // 如果数据库已经有数据，抓下来覆盖当前页面
+                cloudRecordId = res[0].objectId;
+                const onlineData = JSON.parse(res[0].tasksJson);
+                renderPage(onlineData);
+                btn.innerText = "💾 保存并同步";
+            }
+        } catch (err) {
+            console.error("连接数据库失败:", err);
+            btn.innerText = "❌ 连接失败";
+            alert("首次连接数据库可能需要刷新页面重试。当前正显示本地默认数据。");
+        }
+    }
+
+    // 点击保存按钮时：把页面数据推送到 Bmob
+    async function syncDataToCloud() {
+        if (!cloudRecordId) {
+            alert("数据尚未完全加载，请稍等一秒再点保存！");
+            return;
+        }
+        
+        const btn = document.getElementById('saveBtn');
+        btn.innerText = "⏳ 正在上传...";
+        
+        const currentData = getPageData();
+        const query = Bmob.Query("GlobalTaskLog");
+        
+        try {
+            query.set("id", cloudRecordId); // 必须带上记录 ID 才能更新覆盖
+            query.set("tasksJson", JSON.stringify(currentData));
+            await query.save();
+            
+            btn.innerText = "✅ 同步成功！";
+            setTimeout(() => {
+                btn.innerText = "💾 保存并同步";
+            }, 2000);
+        } catch (err) {
+            console.error("同步失败:", err);
+            alert("网络波动，同步失败，请再试一次！");
+            btn.innerText = "💾 保存并同步";
+        }
+    }
+
+    // 页面启动时自动拉取数据
+    window.onload = () => {
+        loadCloudData();
+    };
+
+    // ----- 下面是原有的页面筛选排版逻辑，保持不变 -----
     const getToday = () => {
         const d = new Date();
         return new Date(d.getFullYear(), d.getMonth(), d.getDate());
@@ -315,7 +423,6 @@
 
     function filterData(type, btnElement) {
         updateActiveButton(btnElement);
-        
         const today = getToday();
         const cards = document.querySelectorAll('.task-card');
         let visibleCount = 0;
@@ -332,14 +439,9 @@
         cards.forEach(card => {
             const rowDate = parseDate(card.getAttribute('data-date'));
             let show = false;
-
-            if (type === 'all') {
-                show = true;
-            } else if (type === 'week') {
-                show = rowDate >= weekStart && rowDate <= weekEnd;
-            } else if (type === 'month') {
-                show = rowDate >= monthStart && rowDate <= monthEnd;
-            }
+            if (type === 'all') show = true;
+            else if (type === 'week') show = rowDate >= weekStart && rowDate <= weekEnd;
+            else if (type === 'month') show = rowDate >= monthStart && rowDate <= monthEnd;
 
             card.style.display = show ? 'block' : 'none';
             if (show) visibleCount++;
@@ -351,24 +453,19 @@
     function filterByDate() {
         const startInput = document.getElementById('startDate').value;
         const endInput = document.getElementById('endDate').value;
-        
         if (!startInput || !endInput) {
             alert('请选择完整的开始和结束日期');
             return;
         }
-
         const start = parseDate(startInput);
         const end = parseDate(endInput);
-
         updateActiveButton(null);
-
         const cards = document.querySelectorAll('.task-card');
         let visibleCount = 0;
 
         cards.forEach(card => {
             const rowDate = parseDate(card.getAttribute('data-date'));
             const show = rowDate >= start && rowDate <= end;
-            
             card.style.display = show ? 'block' : 'none';
             if (show) visibleCount++;
         });

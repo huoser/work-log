@@ -1,2016 +1,551 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>📚 课程打卡系统</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;500;600;700;900&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
-<style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>招生工作日志协作版</title>
+    <script src="https://unpkg.com/hydrogen-js-sdk/dist/Bmob-2.2.5.min.js"></script>
+    <style>
+        :root {
+            --apple-blue: #0071e3;
+            --apple-green: #34c759;
+            --apple-bg: #f5f5f7;
+            --apple-card-bg: #ffffff;
+            --apple-text-main: #1d1d1f;
+            --apple-text-sub: #86868b;
+            --apple-border: #d2d2d7;
+            --apple-hover: #f5f5f7;
+        }
 
-:root {
-  --ink: #1e2b3c;
-  --ink-light: #4a5568;
-  --paper: #f7f2ea;
-  --paper-dark: #ede5d8;
-  --cream: #faf7f2;
-  --teal: #1a5f7a;
-  --teal-light: #2a7f9e;
-  --teal-pale: #e8f4f8;
-  --amber: #d97706;
-  --amber-light: #fbbf24;
-  --amber-pale: #fef3c7;
-  --green: #047857;
-  --green-light: #059669;
-  --green-pale: #d1fae5;
-  --red: #b91c1c;
-  --red-pale: #fee2e2;
-  --purple: #6d28d9;
-  --purple-pale: #ede9fe;
-  --gray: #6b7280;
-  --gray-pale: #f3f4f6;
-  --border: rgba(30,43,60,0.12);
-  --shadow-sm: 0 2px 8px rgba(30,43,60,0.08);
-  --shadow: 0 8px 32px rgba(30,43,60,0.12);
-  --shadow-lg: 0 20px 60px rgba(30,43,60,0.18);
-  --radius: 20px;
-  --radius-sm: 12px;
-  --radius-xs: 8px;
-}
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--apple-bg);
+            color: var(--apple-text-main);
+            margin: 0;
+            padding: 0;
+            -webkit-font-smoothing: antialiased;
+            padding-bottom: calc(env(safe-area-inset-bottom) + 80px); 
+        }
 
-html { scroll-behavior: smooth; }
+        .header {
+            padding: 16px 20px;
+            background-color: rgba(245, 245, 247, 0.85);
+            backdrop-filter: saturate(180%) blur(20px);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
+            border-bottom: 1px solid var(--apple-border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
 
-body {
-  font-family: 'Noto Serif SC', 'PingFang SC', 'Microsoft YaHei', serif;
-  background-color: var(--paper);
-  background-image:
-    radial-gradient(ellipse at 15% 15%, rgba(26,95,122,0.06) 0%, transparent 55%),
-    radial-gradient(ellipse at 85% 85%, rgba(217,119,6,0.06) 0%, transparent 55%);
-  color: var(--ink);
-  min-height: 100vh;
-}
+        .header h1 {
+            margin: 0 0 12px 0;
+            font-size: 20px;
+            font-weight: 600;
+            letter-spacing: -0.003em;
+            text-align: center;
+        }
 
-/* ===== HEADER ===== */
-.header {
-  background: linear-gradient(135deg, #0d3d52 0%, var(--teal) 60%, #1e7a64 100%);
-  padding: 28px 36px;
-  position: relative;
-  overflow: hidden;
-}
-.header::before {
-  content: '';
-  position: absolute;
-  top: -60%;
-  right: -5%;
-  width: 480px;
-  height: 480px;
-  background: rgba(255,255,255,0.04);
-  border-radius: 50%;
-  pointer-events: none;
-}
-.header::after {
-  content: '📚';
-  position: absolute;
-  top: 12px;
-  right: 36px;
-  font-size: 90px;
-  opacity: 0.08;
-  pointer-events: none;
-}
-.header-content {
-  max-width: 1240px;
-  margin: 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 16px;
-  position: relative;
-  z-index: 1;
-}
-.header-title h1 {
-  color: white;
-  font-size: 30px;
-  font-weight: 700;
-  letter-spacing: 3px;
-  text-shadow: 0 2px 8px rgba(0,0,0,0.2);
-}
-.header-title p {
-  color: rgba(255,255,255,0.6);
-  font-size: 13px;
-  margin-top: 6px;
-  font-weight: 300;
-  font-style: italic;
-  font-family: 'Crimson Pro', serif;
-  letter-spacing: 1px;
-}
-.header-date {
-  text-align: right;
-  color: white;
-}
-.header-date .big {
-  font-size: 38px;
-  font-weight: 900;
-  line-height: 1;
-  font-family: 'Crimson Pro', serif;
-}
-.header-date .small {
-  font-size: 14px;
-  color: rgba(255,255,255,0.7);
-  margin-top: 4px;
-  letter-spacing: 1px;
-}
+        .filter-group {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
 
-/* ===== NAV TABS ===== */
-.nav-bar {
-  background: white;
-  border-bottom: 1px solid var(--border);
-  position: sticky;
-  top: 0;
-  z-index: 200;
-  box-shadow: var(--shadow-sm);
-}
-.nav-inner {
-  max-width: 1240px;
-  margin: 0 auto;
-  display: flex;
-  padding: 0 36px;
-}
-.nav-tab {
-  padding: 16px 26px;
-  cursor: pointer;
-  border-bottom: 3px solid transparent;
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--ink-light);
-  transition: all 0.25s;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  user-select: none;
-  letter-spacing: 0.5px;
-}
-.nav-tab:hover { color: var(--teal); background: var(--teal-pale); }
-.nav-tab.active {
-  color: var(--teal);
-  border-bottom-color: var(--teal);
-  font-weight: 700;
-}
+        button.filter-btn {
+            background-color: #e8e8ed;
+            border: none;
+            color: var(--apple-text-main);
+            padding: 6px 14px;
+            border-radius: 980px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
 
-/* ===== MAIN ===== */
-.main {
-  max-width: 1240px;
-  margin: 0 auto;
-  padding: 32px 36px;
-}
+        button.filter-btn.active {
+            background-color: var(--apple-blue);
+            color: #ffffff;
+        }
 
-/* ===== WEEK NAV ===== */
-.week-nav {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 24px;
-  background: white;
-  padding: 18px 28px;
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-sm);
-  border: 1px solid var(--border);
-  flex-wrap: wrap;
-  gap: 12px;
-}
-.week-nav-btn {
-  background: var(--teal-pale);
-  border: 1px solid rgba(26,95,122,0.2);
-  color: var(--teal);
-  padding: 10px 22px;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  font-size: 14px;
-  font-family: inherit;
-  font-weight: 600;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.week-nav-btn:hover {
-  background: var(--teal);
-  color: white;
-  border-color: transparent;
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-sm);
-}
-.week-nav-center { text-align: center; }
-.week-nav-center .week-title { font-size: 17px; font-weight: 700; }
-.week-nav-center .week-sub { font-size: 12px; color: var(--gray); margin-top: 3px; }
-.btn-today {
-  background: var(--amber-pale);
-  border: 1px solid rgba(217,119,6,0.2);
-  color: var(--amber);
-  padding: 8px 16px;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  font-size: 12px;
-  font-family: inherit;
-  font-weight: 700;
-  transition: all 0.2s;
-  letter-spacing: 0.5px;
-}
-.btn-today:hover { background: var(--amber); color: white; border-color: transparent; }
+        .date-picker {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            width: 100%;
+            margin-top: 8px;
+        }
 
-/* ===== DAYS GRID ===== */
-.days-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 14px;
-}
-@media (max-width: 1000px) { .days-grid { grid-template-columns: repeat(4, 1fr); } }
-@media (max-width: 640px) {
-  .days-grid { grid-template-columns: repeat(2, 1fr); }
-  .main { padding: 20px 16px; }
-  .nav-inner { padding: 0 16px; }
-  .header { padding: 20px; }
-}
+        input[type="date"] {
+            border: 1px solid var(--apple-border);
+            background: var(--apple-card-bg);
+            border-radius: 8px;
+            padding: 4px 8px;
+            font-family: inherit;
+            color: var(--apple-text-main);
+            font-size: 13px;
+            outline: none;
+        }
 
-/* ===== DAY CARD ===== */
-.day-card {
-  background: white;
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-sm);
-  overflow: hidden;
-  transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
-  border: 2px solid transparent;
-  position: relative;
-  animation: cardIn 0.5s ease both;
-}
-@keyframes cardIn {
-  from { opacity: 0; transform: translateY(20px) scale(0.97); }
-  to   { opacity: 1; transform: translateY(0)   scale(1); }
-}
-.day-card:nth-child(1){animation-delay:.04s}
-.day-card:nth-child(2){animation-delay:.08s}
-.day-card:nth-child(3){animation-delay:.12s}
-.day-card:nth-child(4){animation-delay:.16s}
-.day-card:nth-child(5){animation-delay:.20s}
-.day-card:nth-child(6){animation-delay:.24s}
-.day-card:nth-child(7){animation-delay:.28s}
+        .task-list {
+            padding: 20px 16px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
 
-.day-card:hover { box-shadow: var(--shadow); transform: translateY(-3px); }
-.day-card.today { border-color: var(--amber); }
-.day-card.checked { border-color: var(--green); }
-.day-card.no-class { opacity: 0.55; }
+        .task-card {
+            background: var(--apple-card-bg);
+            border-radius: 18px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+            transition: transform 0.2s;
+        }
 
-.card-head {
-  padding: 14px 16px 12px;
-  background: var(--paper);
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-}
-.day-card.today .card-head { background: linear-gradient(135deg, #fffbeb, #fef3c7); }
-.day-card.checked .card-head { background: linear-gradient(135deg, #ecfdf5, #d1fae5); }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #f0f0f0;
+            padding-bottom: 12px;
+            margin-bottom: 12px;
+        }
 
-.card-head-left .weekday { font-size: 11px; color: var(--gray); font-weight: 600; letter-spacing: 1px; }
-.card-head-left .day-num { font-size: 26px; font-weight: 900; line-height: 1.1; font-family: 'Crimson Pro', serif; }
-.card-head-left .month { font-size: 11px; color: var(--gray); }
+        .date-cell {
+            font-weight: 600;
+            font-size: 16px;
+            color: var(--apple-blue);
+        }
 
-.today-badge {
-  background: var(--amber);
-  color: white;
-  font-size: 9px;
-  padding: 3px 8px;
-  border-radius: 999px;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-  margin-top: 2px;
-}
+        .day-cell {
+            font-size: 14px;
+            color: var(--apple-text-sub);
+            font-weight: 500;
+        }
 
-/* ===== CLASS LIST ===== */
-.class-list {
-  padding: 10px 10px 8px;
-  min-height: 90px;
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-.no-class-msg {
-  color: var(--gray);
-  font-size: 12px;
-  text-align: center;
-  padding: 24px 0;
-  opacity: 0.5;
-}
-.class-chip {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 5px 8px;
-  border-radius: 7px;
-  font-size: 11px;
-  transition: transform 0.2s;
-  cursor: default;
-}
-.class-chip:hover { transform: translateX(2px); }
-.class-chip .period-tag {
-  font-size: 9px;
-  font-weight: 800;
-  min-width: 20px;
-  color: inherit;
-  opacity: 0.7;
-  flex-shrink: 0;
-}
-.class-chip .subj { font-weight: 700; font-size: 11px; }
-.class-chip .detail { font-size: 10px; opacity: 0.7; }
+        .card-body {
+            line-height: 1.6;
+            font-size: 15px;
+            position: relative; 
+        }
 
-.chip-marketing  { background:#dbeafe; color:#1e40af; }
-.chip-accounting { background:#d1fae5; color:#065f46; }
-.chip-computer   { background:#ede9fe; color:#5b21b6; }
-.chip-evening    { background:#f3f4f6; color:#6b7280; }
-.chip-substitute { background:#fee2e2; color:#991b1b; }
+        .tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            background-color: rgba(0, 113, 227, 0.1);
+            color: var(--apple-blue);
+            margin-bottom: 8px;
+            outline: none;
+        }
 
-/* ===== CARD FOOTER ===== */
-.card-foot {
-  padding: 8px 10px;
-  border-top: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.btn-checkin {
-  flex: 1;
-  padding: 9px 10px;
-  border: none;
-  border-radius: var(--radius-xs);
-  background: var(--teal);
-  color: white;
-  font-family: inherit;
-  font-size: 12px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  letter-spacing: 0.5px;
-}
-.btn-checkin:hover { background: var(--teal-light); transform: scale(1.02); }
-.btn-checkin:active { transform: scale(0.97); }
-.btn-checkin.done { background: var(--green); }
-.btn-checkin:disabled { background: var(--gray); cursor: not-allowed; opacity: 0.45; transform: none; }
+        .task-desc {
+            color: var(--apple-text-main);
+            outline: none;
+            min-height: 24px;
+            padding-bottom: 24px; 
+        }
+        
+        .copy-text-btn {
+            position: absolute;
+            bottom: -8px; 
+            right: -8px;
+            background-color: transparent;
+            color: var(--apple-blue);
+            border: none;
+            padding: 8px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+            opacity: 0.8;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
 
-.btn-edit {
-  width: 34px;
-  height: 34px;
-  border: 1px solid var(--border);
-  background: white;
-  border-radius: var(--radius-xs);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 13px;
-  transition: all 0.2s;
-  flex-shrink: 0;
-}
-.btn-edit:hover { background: var(--teal-pale); border-color: var(--teal); }
+        .copy-text-btn:active {
+            opacity: 1;
+            transform: scale(0.96);
+        }
 
-.checkin-time-label {
-  font-size: 9px;
-  color: var(--green);
-  text-align: center;
-  padding: 2px 0 6px;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-}
+        .copy-text-btn.success {
+            color: var(--apple-green);
+            opacity: 1;
+        }
 
-/* ===== STAMP ===== */
-.stamp-overlay {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 5;
-}
-.stamp {
-  width: 72px;
-  height: 72px;
-  border: 3px solid var(--green);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  font-size: 10px;
-  font-weight: 900;
-  color: var(--green);
-  background: rgba(255,255,255,0.82);
-  opacity: 0;
-  transform: rotate(-18deg) scale(0);
-  transition: all 0.5s cubic-bezier(0.34,1.56,0.64,1);
-  letter-spacing: 1px;
-  line-height: 1.2;
-  text-align: center;
-}
-.day-card.checked .stamp {
-  opacity: 0.55;
-  transform: rotate(-18deg) scale(1);
-}
-.stamp-pop {
-  animation: stampPop 0.55s cubic-bezier(0.34,1.56,0.64,1) forwards !important;
-}
-@keyframes stampPop {
-  0%   { transform: rotate(-18deg) scale(3.5); opacity: 0; }
-  60%  { opacity: 0.75; }
-  100% { transform: rotate(-18deg) scale(1); opacity: 0.55; }
-}
+        [contenteditable="true"]:focus {
+            background-color: #f0f8ff;
+            border-radius: 4px;
+            padding: 2px 4px;
+            margin: -2px -4px;
+        }
 
-/* ===== STATS ===== */
-.stats-wrap { animation: fadeUp 0.35s ease both; }
-@keyframes fadeUp {
-  from { opacity:0; transform: translateY(12px); }
-  to   { opacity:1; transform: translateY(0); }
-}
+        .card-footer {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px dashed #ebebeb;
+            font-size: 13px;
+            color: var(--apple-text-sub);
+            display: flex;
+            gap: 6px;
+        }
 
-/* ===== STATS FILTER CHIPS ===== */
-.stats-filters {
-  background: white;
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-sm);
-  border: 1px solid var(--border);
-  padding: 0;
-  margin-bottom: 24px;
-  overflow: hidden;
-}
-.sf-row {
-  display: flex;
-  align-items: flex-start;
-  gap: 0;
-  padding: 18px 24px;
-  border-bottom: 1px solid var(--border);
-}
-.sf-row:last-child { border-bottom: none; }
-.sf-row-label {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--ink-light);
-  letter-spacing: 0.5px;
-  min-width: 80px;
-  padding-top: 10px;
-  flex-shrink: 0;
-}
-.sf-row-body {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  flex-wrap: wrap;
-  flex: 1;
-}
-.sf-sep { color: var(--gray); font-size: 20px; padding-top: 22px; }
-.sf-chips-wrap {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  align-items: flex-start;
-}
-.sf-chip-group {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-.sf-chip-title {
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--gray);
-  min-width: 52px;
-  letter-spacing: 0.5px;
-}
-.sf-chips { display: flex; flex-wrap: wrap; gap: 6px; }
-.sf-chip {
-  padding: 5px 13px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  border: 1.5px solid var(--border);
-  color: var(--ink-light);
-  background: var(--paper);
-  transition: all 0.18s;
-  user-select: none;
-  letter-spacing: 0.3px;
-}
-.sf-chip:hover { border-color: var(--teal); color: var(--teal); background: var(--teal-pale); }
-.sf-chip.active {
-  background: var(--teal);
-  color: white;
-  border-color: var(--teal);
-  box-shadow: 0 2px 8px rgba(26,95,122,0.25);
-}
-.sf-action-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 24px;
-  background: var(--paper);
-  gap: 12px;
-  flex-wrap: wrap;
-}
-.sf-active-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  flex: 1;
-}
-.sf-tag {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 4px 10px;
-  border-radius: 999px;
-  background: var(--amber-pale);
-  color: var(--amber);
-  font-size: 11px;
-  font-weight: 700;
-  border: 1px solid rgba(217,119,6,0.25);
-  letter-spacing: 0.3px;
-}
-.btn-reset {
-  padding: 9px 18px;
-  background: var(--paper-dark);
-  color: var(--ink-light);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-xs);
-  font-family: inherit;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-.btn-reset:hover { background: var(--red-pale); color: var(--red); border-color: rgba(185,28,28,0.2); }
-/* Date preset buttons */
-.sf-date-body { flex-direction: column; align-items: flex-start; gap: 12px; }
-.sf-date-inputs { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
-.sf-presets { display: flex; flex-wrap: wrap; gap: 6px; }
-.sf-preset {
-  padding: 5px 14px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  border: 1.5px solid rgba(26,95,122,0.25);
-  color: var(--teal);
-  background: var(--teal-pale);
-  font-family: inherit;
-  transition: all 0.18s;
-  letter-spacing: 0.3px;
-}
-.sf-preset:hover { background: var(--teal); color: white; border-color: var(--teal); box-shadow: 0 2px 8px rgba(26,95,122,0.25); }
-.sf-preset.active { background: var(--teal); color: white; border-color: var(--teal); box-shadow: 0 2px 8px rgba(26,95,122,0.25); }
-/* Multi-select chip checkmark */
-.sf-chip.active:not([data-val="all"])::before { content: '✓ '; font-size: 10px; opacity: 0.85; }
-.fg { display: flex; flex-direction: column; gap: 6px; }
-.fg label { font-size: 11px; font-weight: 700; color: var(--gray); letter-spacing: 0.5px; }
-  padding: 10px 14px;
-  border: 1.5px solid var(--border);
-  border-radius: var(--radius-xs);
-  font-family: inherit;
-  font-size: 14px;
-  color: var(--ink);
-  background: var(--paper);
-  outline: none;
-  transition: border-color 0.2s, box-shadow 0.2s;
-}
-.fi:focus { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(26,95,122,0.1); }
-.btn-query {
-  padding: 11px 32px;
-  background: linear-gradient(135deg, var(--teal), var(--teal-light));
-  color: white;
-  border: none;
-  border-radius: var(--radius-xs);
-  font-family: inherit;
-  font-size: 14px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s;
-  box-shadow: 0 4px 12px rgba(26,95,122,0.25);
-  letter-spacing: 0.5px;
-}
-.btn-query:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(26,95,122,0.3); }
-.btn-query:active { transform: translateY(0); }
+        .footer-label {
+            font-weight: 500;
+            white-space: nowrap;
+        }
 
-/* Summary cards */
-.summary-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 16px;
-  margin-bottom: 24px;
-}
-.sum-card {
-  background: white;
-  border-radius: var(--radius);
-  padding: 22px 20px 18px;
-  box-shadow: var(--shadow-sm);
-  border: 1px solid var(--border);
-  text-align: center;
-  position: relative;
-  overflow: hidden;
-  animation: cardIn 0.4s ease both;
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-.sum-card:hover { transform: translateY(-4px); box-shadow: var(--shadow); }
-.sum-card::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 4px;
-  border-radius: 4px 4px 0 0;
-}
-.sum-card.c-total::before   { background: linear-gradient(90deg, var(--teal), var(--teal-light)); }
-.sum-card.c-days::before    { background: linear-gradient(90deg, var(--amber), var(--amber-light)); }
-.sum-card.c-mkt::before     { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
-.sum-card.c-acc::before     { background: linear-gradient(90deg, #10b981, #34d399); }
-.sum-card.c-cmp::before     { background: linear-gradient(90deg, #8b5cf6, #a78bfa); }
-.sum-card.c-eve::before     { background: linear-gradient(90deg, #6b7280, #9ca3af); }
+        .footer-content {
+            outline: none;
+            flex-grow: 1;
+            min-height: 18px;
+        }
 
-.sum-num { font-size: 52px; font-weight: 900; line-height: 1; font-family: 'Crimson Pro', serif; margin-bottom: 4px; }
-.sum-card.c-total .sum-num  { color: var(--teal); }
-.sum-card.c-days .sum-num   { color: var(--amber); }
-.sum-card.c-mkt .sum-num    { color: #3b82f6; }
-.sum-card.c-acc .sum-num    { color: #10b981; }
-.sum-card.c-cmp .sum-num    { color: #8b5cf6; }
-.sum-card.c-eve .sum-num    { color: #6b7280; }
-.sum-label { font-size: 12px; color: var(--gray); font-weight: 600; letter-spacing: 0.5px; }
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--apple-text-sub);
+            font-size: 15px;
+            display: none;
+        }
 
-/* Bar chart */
-.chart-card {
-  background: white;
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-sm);
-  border: 1px solid var(--border);
-  margin-bottom: 20px;
-  overflow: hidden;
-  animation: cardIn 0.4s ease both;
-}
-.chart-card-head {
-  padding: 18px 24px;
-  border-bottom: 1px solid var(--border);
-  font-size: 15px;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.bar-chart-body { padding: 20px 24px; display: flex; flex-direction: column; gap: 14px; }
-.bar-row { display: flex; align-items: center; gap: 14px; }
-.bar-lbl { font-size: 13px; color: var(--ink); min-width: 80px; text-align: right; font-weight: 500; }
-.bar-track {
-  flex: 1;
-  height: 30px;
-  background: var(--paper);
-  border-radius: 8px;
-  overflow: hidden;
-  border: 1px solid var(--border);
-}
-.bar-fill {
-  height: 100%;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  padding: 0 10px;
-  justify-content: flex-end;
-  transition: width 1.2s cubic-bezier(0.22,1,0.36,1);
-  min-width: 32px;
-}
-.bar-fill span { font-size: 11px; font-weight: 800; color: white; text-shadow: 0 1px 2px rgba(0,0,0,0.2); }
-.bar-fill.bm { background: linear-gradient(90deg, #60a5fa, #3b82f6); }
-.bar-fill.ba { background: linear-gradient(90deg, #34d399, #10b981); }
-.bar-fill.bc { background: linear-gradient(90deg, #a78bfa, #8b5cf6); }
-.bar-fill.be { background: linear-gradient(90deg, #9ca3af, #6b7280); }
-.bar-cnt { font-size: 13px; font-weight: 700; color: var(--ink-light); min-width: 36px; text-align: right; }
+        .fab-save {
+            position: fixed;
+            bottom: max(30px, env(safe-area-inset-bottom));
+            right: 20px;
+            background-color: var(--apple-blue);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 14px 24px;
+            font-size: 15px;
+            font-weight: 600;
+            box-shadow: 0 4px 16px rgba(0, 113, 227, 0.4);
+            cursor: pointer;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
 
-/* Detail table */
-.detail-card {
-  background: white;
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-sm);
-  border: 1px solid var(--border);
-  overflow: hidden;
-  animation: cardIn 0.5s ease both;
-}
-.detail-head {
-  padding: 18px 24px;
-  border-bottom: 1px solid var(--border);
-  font-size: 15px;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.dtable { width: 100%; border-collapse: collapse; }
-.dtable th {
-  padding: 11px 18px;
-  text-align: left;
-  font-size: 11px;
-  color: var(--gray);
-  font-weight: 700;
-  background: var(--paper);
-  border-bottom: 1px solid var(--border);
-  letter-spacing: 0.8px;
-  text-transform: uppercase;
-}
-.dtable td { padding: 13px 18px; border-bottom: 1px solid var(--border); font-size: 14px; }
-.dtable tr:last-child td { border-bottom: none; }
-.dtable tbody tr { transition: background 0.15s; }
-.dtable tbody tr:hover td { background: var(--paper); }
-.period-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  font-size: 20px;
-  font-weight: 900;
-  font-family: 'Crimson Pro', serif;
-  background: var(--teal-pale);
-  color: var(--teal);
-}
-.subject-pills { display: flex; flex-wrap: wrap; gap: 6px; }
-.subject-pill {
-  font-size: 11px;
-  padding: 3px 10px;
-  border-radius: 999px;
-  font-weight: 600;
-}
-
-/* ===== MODAL ===== */
-.overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.45);
-  backdrop-filter: blur(6px);
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.3s;
-}
-.overlay.open { opacity: 1; pointer-events: all; }
-
-.modal {
-  background: white;
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-lg);
-  width: 100%;
-  max-width: 540px;
-  max-height: 88vh;
-  overflow-y: auto;
-  transform: scale(0.88) translateY(24px);
-  transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1);
-  scrollbar-width: thin;
-}
-.overlay.open .modal { transform: scale(1) translateY(0); }
-
-.modal-head {
-  padding: 24px 28px 20px;
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: linear-gradient(135deg, var(--paper), white);
-  position: sticky;
-  top: 0;
-  z-index: 2;
-}
-.modal-head-info h2 { font-size: 18px; font-weight: 700; }
-.modal-head-info p { font-size: 13px; color: var(--gray); margin-top: 3px; }
-.btn-close {
-  width: 38px;
-  height: 38px;
-  border: none;
-  background: var(--paper);
-  border-radius: 50%;
-  cursor: pointer;
-  font-size: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s;
-  color: var(--ink-light);
-}
-.btn-close:hover { background: var(--red-pale); color: var(--red); transform: rotate(90deg); }
-
-.modal-body { padding: 24px 28px; }
-.class-edit-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
-.edit-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 14px;
-  background: var(--paper);
-  border-radius: var(--radius-xs);
-  border: 1px solid var(--border);
-  transition: border-color 0.2s;
-  animation: cardIn 0.3s ease both;
-}
-.edit-row:hover { border-color: rgba(26,95,122,0.3); }
-.edit-row select, .edit-row input {
-  padding: 6px 10px;
-  border: 1.5px solid var(--border);
-  border-radius: 6px;
-  font-family: inherit;
-  font-size: 13px;
-  background: white;
-  color: var(--ink);
-  outline: none;
-  transition: border-color 0.2s;
-}
-.edit-row select:focus, .edit-row input:focus { border-color: var(--teal); }
-.edit-row .sel-period { width: 96px; }
-.edit-row .sel-subject { flex: 1; min-width: 100px; }
-.edit-row .sel-grade { width: 72px; }
-.edit-row .inp-class { width: 54px; text-align: center; }
-.btn-del {
-  width: 30px;
-  height: 30px;
-  border: none;
-  background: var(--red-pale);
-  color: var(--red);
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 13px;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s;
-}
-.btn-del:hover { background: var(--red); color: white; transform: scale(1.1); }
-.btn-add {
-  width: 100%;
-  padding: 11px;
-  border: 2px dashed var(--border);
-  background: white;
-  border-radius: var(--radius-xs);
-  cursor: pointer;
-  font-family: inherit;
-  font-size: 14px;
-  color: var(--teal);
-  font-weight: 600;
-  transition: all 0.2s;
-  letter-spacing: 0.5px;
-}
-.btn-add:hover { border-color: var(--teal); background: var(--teal-pale); }
-
-.modal-foot {
-  padding: 16px 28px;
-  border-top: 1px solid var(--border);
-  display: flex;
-  gap: 12px;
-  justify-content: flex-end;
-  background: var(--paper);
-}
-.btn-cancel {
-  padding: 10px 26px;
-  border: 1.5px solid var(--border);
-  background: white;
-  border-radius: var(--radius-xs);
-  cursor: pointer;
-  font-family: inherit;
-  font-size: 14px;
-  color: var(--gray);
-  transition: all 0.2s;
-}
-.btn-cancel:hover { background: var(--paper); color: var(--ink); }
-.btn-save {
-  padding: 10px 26px;
-  border: none;
-  background: linear-gradient(135deg, var(--teal), var(--teal-light));
-  color: white;
-  border-radius: var(--radius-xs);
-  cursor: pointer;
-  font-family: inherit;
-  font-size: 14px;
-  font-weight: 700;
-  transition: all 0.2s;
-  box-shadow: 0 4px 12px rgba(26,95,122,0.25);
-}
-.btn-save:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(26,95,122,0.3); }
-
-/* ===== CONFIRM DIALOG ===== */
-.confirm-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.4);
-  backdrop-filter: blur(8px);
-  z-index: 1500;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.3s;
-}
-.confirm-overlay.open { opacity: 1; pointer-events: all; }
-.confirm-box {
-  background: white;
-  border-radius: var(--radius);
-  padding: 40px 36px 32px;
-  max-width: 380px;
-  width: 90%;
-  text-align: center;
-  box-shadow: var(--shadow-lg);
-  transform: scale(0.78) translateY(20px);
-  transition: transform 0.45s cubic-bezier(0.34,1.56,0.64,1);
-}
-.confirm-overlay.open .confirm-box { transform: scale(1) translateY(0); }
-.confirm-emoji { font-size: 64px; display: block; margin-bottom: 16px; animation: wiggle 0.6s ease; }
-@keyframes wiggle {
-  0%,100%{ transform: rotate(0) scale(1); }
-  25%    { transform: rotate(-10deg) scale(1.1); }
-  75%    { transform: rotate(10deg) scale(1.1); }
-}
-.confirm-title { font-size: 20px; font-weight: 700; margin-bottom: 10px; }
-.confirm-desc { font-size: 14px; color: var(--gray); line-height: 1.7; margin-bottom: 28px; }
-.confirm-desc strong { color: var(--teal); }
-.confirm-btns { display: flex; gap: 12px; }
-.confirm-yes {
-  flex: 1;
-  padding: 13px;
-  background: linear-gradient(135deg, var(--green), var(--green-light));
-  color: white;
-  border: none;
-  border-radius: var(--radius-xs);
-  font-family: inherit;
-  font-size: 15px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s;
-  box-shadow: 0 4px 12px rgba(4,120,87,0.3);
-}
-.confirm-yes:hover { transform: scale(1.03); box-shadow: 0 6px 16px rgba(4,120,87,0.35); }
-.confirm-no {
-  flex: 1;
-  padding: 13px;
-  background: var(--paper);
-  color: var(--ink);
-  border: 1.5px solid var(--border);
-  border-radius: var(--radius-xs);
-  font-family: inherit;
-  font-size: 15px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-.confirm-no:hover { background: var(--paper-dark); }
-
-/* ===== TOAST ===== */
-.toast {
-  position: fixed;
-  top: 24px;
-  right: 24px;
-  background: var(--ink);
-  color: white;
-  padding: 14px 20px;
-  border-radius: var(--radius-sm);
-  font-size: 14px;
-  font-weight: 500;
-  z-index: 9999;
-  box-shadow: var(--shadow-lg);
-  transform: translateY(-24px);
-  opacity: 0;
-  transition: all 0.35s cubic-bezier(0.34,1.56,0.64,1);
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  max-width: 300px;
-  pointer-events: none;
-}
-.toast.show { transform: translateY(0); opacity: 1; }
-.toast.success { background: var(--green); }
-.toast.warn    { background: var(--amber); }
-
-/* ===== PANELS ===== */
-.tab-panel { display: none; }
-.tab-panel.active { display: block; }
-
-/* ===== NOTES ===== */
-.card-note {
-  margin: 0 10px 8px;
-  padding: 7px 10px;
-  background: var(--amber-pale);
-  border-left: 3px solid var(--amber);
-  border-radius: 0 var(--radius-xs) var(--radius-xs) 0;
-  font-size: 11px;
-  color: #92400e;
-  line-height: 1.5;
-  animation: cardIn 0.3s ease both;
-  word-break: break-all;
-}
-.card-note-icon { margin-right: 4px; }
-
-.note-section {
-  margin-top: 16px;
-  padding-top: 16px;
-  border-top: 1px dashed var(--border);
-}
-.note-section label {
-  display: block;
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--ink-light);
-  margin-bottom: 8px;
-  letter-spacing: 0.5px;
-}
-.note-textarea {
-  width: 100%;
-  min-height: 80px;
-  padding: 10px 14px;
-  border: 1.5px solid var(--border);
-  border-radius: var(--radius-xs);
-  font-family: inherit;
-  font-size: 13px;
-  color: var(--ink);
-  background: var(--amber-pale);
-  resize: vertical;
-  outline: none;
-  transition: border-color 0.2s, box-shadow 0.2s;
-  line-height: 1.6;
-}
-.note-textarea::placeholder { color: rgba(146,64,14,0.4); }
-.note-textarea:focus { border-color: var(--amber); box-shadow: 0 0 0 3px rgba(217,119,6,0.1); }
-
-/* ===== EMPTY ===== */
-.empty {
-  text-align: center;
-  padding: 70px 20px;
-  color: var(--gray);
-  background: white;
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-sm);
-  border: 1px solid var(--border);
-}
-.empty .e-icon { font-size: 60px; display: block; margin-bottom: 16px; opacity: 0.7; }
-.empty p { font-size: 15px; }
-.empty small { font-size: 13px; color: rgba(107,114,128,0.7); margin-top: 8px; display: block; }
-
-/* ===== LOADING ===== */
-#loadingOverlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(247,242,234,0.92);
-  z-index: 9999;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 18px;
-}
-.loading-spinner {
-  width: 48px; height: 48px;
-  border: 4px solid var(--border);
-  border-top-color: var(--teal);
-  border-radius: 50%;
-  animation: spin 0.9s linear infinite;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-.loading-text { font-size: 15px; color: var(--teal); font-weight: 600; letter-spacing: 1px; }
-</style>
-
-<!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+        .fab-save:active {
+            transform: scale(0.95);
+            background-color: #005bb5;
+        }
+    </style>
 </head>
 <body>
-<!-- Loading Overlay -->
-<div id="loadingOverlay">
-  <div class="loading-spinner"></div>
-  <div class="loading-text">☁️ 同步云端数据中…</div>
-</div>
 
-
-<!-- HEADER -->
 <div class="header">
-  <div class="header-content">
-    <div class="header-title">
-      <h1>📚 课程打卡系统</h1>
-      <p>Teacher Schedule & Hour Tracker</p>
+    <h1>招生工作日志协作版</h1>
+    <div class="filter-group">
+        <button class="filter-btn active" onclick="filterData('all', this)">全部</button>
+        <button class="filter-btn" onclick="filterData('week', this)">本周</button>
+        <button class="filter-btn" onclick="filterData('month', this)">本月</button>
     </div>
-    <div class="header-date">
-      <div class="big" id="hDate">--</div>
-      <div class="small" id="hDay">--</div>
+    <div class="date-picker">
+        <input type="date" id="startDate">
+        <span style="color:var(--apple-text-sub); font-size:12px;">至</span>
+        <input type="date" id="endDate">
+        <button class="filter-btn" onclick="filterByDate()" style="padding: 4px 10px; margin-left:4px;">筛选</button>
     </div>
-  </div>
 </div>
 
-<!-- NAV -->
-<nav class="nav-bar">
-  <div class="nav-inner">
-    <div class="nav-tab active" data-tab="week" onclick="switchTab('week')">📅 本周课表</div>
-    <div class="nav-tab" data-tab="stats" onclick="switchTab('stats')">📊 课时统计</div>
-  </div>
-</nav>
-
-<div class="main">
-
-  <!-- WEEK PANEL -->
-  <div class="tab-panel active" id="tab-week">
-    <div class="week-nav">
-      <button class="week-nav-btn" onclick="changeWeek(-1)">← 上一周</button>
-      <div class="week-nav-center">
-        <div class="week-title" id="wkTitle">加载中…</div>
-        <div class="week-sub" id="wkSub"></div>
-      </div>
-      <div style="display:flex;gap:10px;align-items:center">
-        <button class="btn-today" onclick="goNow()">📍 本周</button>
-        <button class="week-nav-btn" onclick="changeWeek(1)">下一周 →</button>
-      </div>
+<div class="task-list" id="logList">
+    <div style="text-align: center; padding: 40px; color: var(--apple-text-sub); font-size: 15px;">
+        正在拉取云端任务...
     </div>
-    <div class="days-grid" id="daysGrid"></div>
-  </div>
-
-  <!-- STATS PANEL -->
-  <div class="tab-panel" id="tab-stats">
-    <div class="stats-wrap">
-      <div class="stats-filters">
-        <!-- Row 1: Date range -->
-        <div class="sf-row">
-          <div class="sf-row-label">🗓️ 日期范围</div>
-          <div class="sf-row-body sf-date-body">
-            <div class="sf-presets">
-              <button class="sf-preset" onclick="setDatePreset('week')">本周</button>
-              <button class="sf-preset" onclick="setDatePreset('lastweek')">上周</button>
-              <button class="sf-preset" onclick="setDatePreset('month')">本月</button>
-              <button class="sf-preset" onclick="setDatePreset('lastmonth')">上月</button>
-              <button class="sf-preset" onclick="setDatePreset('7')">近7天</button>
-              <button class="sf-preset" onclick="setDatePreset('30')">近30天</button>
-              <button class="sf-preset" onclick="setDatePreset('90')">近3个月</button>
-            </div>
-            <div class="sf-date-inputs">
-              <div class="fg">
-                <label>开始日期</label>
-                <input type="date" class="fi" id="sStart">
-              </div>
-              <div class="sf-sep">—</div>
-              <div class="fg">
-                <label>结束日期</label>
-                <input type="date" class="fi" id="sEnd">
-              </div>
-            </div>
-          </div>
-        </div>
-        <!-- Row 2: Chip filters -->
-        <div class="sf-row">
-          <div class="sf-row-label">🔀 自由组合</div>
-          <div class="sf-row-body sf-chips-wrap">
-            <!-- Subject -->
-            <div class="sf-chip-group">
-              <div class="sf-chip-title">📚 科目</div>
-              <div class="sf-chips" id="chipSubject">
-                <span class="sf-chip active" data-val="all">全部</span>
-                <span class="sf-chip" data-val="市场营销">市场营销</span>
-                <span class="sf-chip" data-val="基础会计">基础会计</span>
-                <span class="sf-chip" data-val="计算机应用">计算机应用</span>
-                <span class="sf-chip" data-val="晚自习">晚自习</span>
-                <span class="sf-chip" data-val="代课">代课</span>
-              </div>
-            </div>
-            <!-- Grade -->
-            <div class="sf-chip-group">
-              <div class="sf-chip-title">🎓 年级</div>
-              <div class="sf-chips" id="chipGrade">
-                <span class="sf-chip active" data-val="all">全部</span>
-                <span class="sf-chip" data-val="高一">高一</span>
-                <span class="sf-chip" data-val="高二">高二</span>
-                <span class="sf-chip" data-val="高三">高三</span>
-              </div>
-            </div>
-            <!-- Weekday -->
-            <div class="sf-chip-group">
-              <div class="sf-chip-title">📆 星期</div>
-              <div class="sf-chips" id="chipWeekday">
-                <span class="sf-chip active" data-val="all">全部</span>
-                <span class="sf-chip" data-val="1">周一</span>
-                <span class="sf-chip" data-val="2">周二</span>
-                <span class="sf-chip" data-val="3">周三</span>
-                <span class="sf-chip" data-val="4">周四</span>
-                <span class="sf-chip" data-val="5">周五</span>
-                <span class="sf-chip" data-val="6">周六</span>
-              </div>
-            </div>
-            <!-- Period -->
-            <div class="sf-chip-group">
-              <div class="sf-chip-title">⏰ 节次</div>
-              <div class="sf-chips" id="chipPeriod">
-                <span class="sf-chip active" data-val="all">全部</span>
-                <span class="sf-chip" data-val="1">第1节</span>
-                <span class="sf-chip" data-val="2">第2节</span>
-                <span class="sf-chip" data-val="3">第3节</span>
-                <span class="sf-chip" data-val="4">第4节</span>
-                <span class="sf-chip" data-val="5">第5节</span>
-                <span class="sf-chip" data-val="6">第6节</span>
-                <span class="sf-chip" data-val="7">第7节</span>
-                <span class="sf-chip" data-val="8">晚自习①</span>
-                <span class="sf-chip" data-val="9">晚自习②</span>
-              </div>
-            </div>
-            <!-- Class Number -->
-            <div class="sf-chip-group">
-              <div class="sf-chip-title">🏫 班级</div>
-              <div class="sf-chips" id="chipClass">
-                <span class="sf-chip active" data-val="all">全部</span>
-                <span class="sf-chip" data-val="1">1班</span>
-                <span class="sf-chip" data-val="2">2班</span>
-                <span class="sf-chip" data-val="3">3班</span>
-                <span class="sf-chip" data-val="4">4班</span>
-              </div>
-            </div>
-          </div>
-        </div>
-        <!-- Action row -->
-        <div class="sf-action-row">
-          <div class="sf-active-tags" id="sfActiveTags"></div>
-          <div style="display:flex;gap:10px;align-items:center;flex-shrink:0">
-            <button class="btn-reset" onclick="resetFilters()">↺ 重置</button>
-            <button class="btn-query" onclick="runStats()">🔍 统计查询</button>
-          </div>
-        </div>
-      </div>
-      <div id="statsOutput">
-        <div class="empty">
-          <span class="e-icon">📊</span>
-          <p>选择日期范围后点击「统计查询」</p>
-          <small>支持按科目分类统计已打卡课时</small>
-        </div>
-      </div>
-    </div>
-  </div>
-
 </div>
 
-<!-- EDIT MODAL -->
-<div class="overlay" id="editOverlay">
-  <div class="modal">
-    <div class="modal-head">
-      <div class="modal-head-info">
-        <h2 id="mTitle">编辑课程</h2>
-        <p id="mSub">修改当日实际课程安排</p>
-      </div>
-      <button class="btn-close" onclick="closeEdit()">✕</button>
+<div id="defaultData" style="display: none;">
+    <div class="task-card" data-date="2026-03-26">
+        <div class="card-header"><span class="date-cell">2026-03-26</span><span class="day-cell">周四</span></div>
+        <div class="card-body">
+            <span class="tag" contenteditable="true">工作筹备</span>
+            <div class="task-desc" contenteditable="true">招生小组召开首次碰头会。明确组内4人具体分工，梳理现阶段任务目标，制定前期稳步推进的招生策略。</div>
+            <button class="copy-text-btn" onclick="copyFormattedTask(this)">📋 复制报备文字</button>
+        </div>
+        <div class="card-footer"><span class="footer-label">📌 备注:</span><span class="footer-content" contenteditable="true">建议附上会议照片</span></div>
     </div>
-    <div class="modal-body">
-      <div class="class-edit-list" id="editList"></div>
-      <button class="btn-add" onclick="addRow()">＋ 添加课程</button>
-      <div class="note-section">
-        <label>📝 今日备注</label>
-        <textarea class="note-textarea" id="editNote" placeholder="记录当天的特殊情况、调课原因、学生表现等…"></textarea>
-      </div>
+    <div class="task-card" data-date="2026-03-27">
+        <div class="card-header"><span class="date-cell">2026-03-27</span><span class="day-cell">周五</span></div>
+        <div class="card-body">
+            <span class="tag" contenteditable="true">资料研读</span>
+            <div class="task-desc" contenteditable="true">清点学校下发的招生宣传单。组内共同学习并探讨我校核心专业的宣传亮点与就业优势，统一对外解答口径。</div>
+            <button class="copy-text-btn" onclick="copyFormattedTask(this)">📋 复制报备文字</button>
+        </div>
+        <div class="card-footer"><span class="footer-label">📌 备注:</span><span class="footer-content" contenteditable="true">无</span></div>
     </div>
-    <div class="modal-foot">
-      <button class="btn-cancel" onclick="closeEdit()">取消</button>
-      <button class="btn-save" onclick="saveEdit()">💾 保存更改</button>
+    <div class="task-card" data-date="2026-03-30">
+        <div class="card-header"><span class="date-cell">2026-03-30</span><span class="day-cell">周一</span></div>
+        <div class="card-body">
+            <span class="tag" contenteditable="true">信息收集</span>
+            <div class="task-desc" contenteditable="true">通过多渠道初步收集自贡板仓实验中学、自贡德铭中学的基本情况（如预估毕业生人数、学校作息时间等），建立目标学校基础信息表。</div>
+            <button class="copy-text-btn" onclick="copyFormattedTask(this)">📋 复制报备文字</button>
+        </div>
+        <div class="card-footer"><span class="footer-label">📌 备注:</span><span class="footer-content" contenteditable="true">无</span></div>
     </div>
-  </div>
+    <div class="task-card" data-date="2026-03-31">
+        <div class="card-header"><span class="date-cell">2026-03-31</span><span class="day-cell">周二</span></div>
+        <div class="card-body">
+            <span class="tag" contenteditable="true">实地踩点</span>
+            <div class="task-desc" contenteditable="true">前往自贡板仓实验中学进行外围踩点。摸排该校初三学生放学主要路线、家长接送聚集区及周边宣传环境，为后续地推选址做准备。</div>
+            <button class="copy-text-btn" onclick="copyFormattedTask(this)">📋 复制报备文字</button>
+        </div>
+        <div class="card-footer"><span class="footer-label">📌 备注:</span><span class="footer-content" contenteditable="true">需拍摄2-3张校门外围照片</span></div>
+    </div>
+    <div class="task-card" data-date="2026-04-01">
+        <div class="card-header"><span class="date-cell">2026-04-01</span><span class="day-cell">周三</span></div>
+        <div class="card-body">
+            <span class="tag" contenteditable="true">踩点复盘</span>
+            <div class="task-desc" contenteditable="true">汇总昨日板仓中学的实地摸排情况，评估并确定最佳的派单位置与时间段，初步拟定该校的宣传执行预案。</div>
+            <button class="copy-text-btn" onclick="copyFormattedTask(this)">📋 复制报备文字</button>
+        </div>
+        <div class="card-footer"><span class="footer-label">📌 备注:</span><span class="footer-content" contenteditable="true">无</span></div>
+    </div>
+    <div class="task-card" data-date="2026-04-02">
+        <div class="card-header"><span class="date-cell">2026-04-02</span><span class="day-cell">周四</span></div>
+        <div class="card-body">
+            <span class="tag" contenteditable="true">实地踩点</span>
+            <div class="task-desc" contenteditable="true">前往自贡德铭中学开展外围调研。实地观察学校门禁情况及放学高峰期人流特征，记录便于开展宣传工作的安全点位。</div>
+            <button class="copy-text-btn" onclick="copyFormattedTask(this)">📋 复制报备文字</button>
+        </div>
+        <div class="card-footer"><span class="footer-label">📌 备注:</span><span class="footer-content" contenteditable="true">需拍摄德铭中学校门照片</span></div>
+    </div>
+    <div class="task-card" data-date="2026-04-03">
+        <div class="card-header"><span class="date-cell">2026-04-03</span><span class="day-cell">周五</span></div>
+        <div class="card-body">
+            <span class="tag" contenteditable="true">工作周结</span>
+            <div class="task-desc" contenteditable="true">整理本周两所初中的前期调研与踩点记录，形成小组内部的“生源学校档案”。撰写本周工作日志，并规划下周的工作重点。</div>
+            <button class="copy-text-btn" onclick="copyFormattedTask(this)">📋 复制报备文字</button>
+        </div>
+        <div class="card-footer"><span class="footer-label">📌 备注:</span><span class="footer-content" contenteditable="true">需提交周报</span></div>
+    </div>
 </div>
 
-<!-- CONFIRM MODAL -->
-<div class="confirm-overlay" id="confirmOverlay">
-  <div class="confirm-box">
-    <span class="confirm-emoji" id="cEmoji">🎉</span>
-    <div class="confirm-title" id="cTitle">确认打卡</div>
-    <div class="confirm-desc" id="cDesc">确认完成今天的全部课程？</div>
-    <div class="confirm-btns">
-      <button class="confirm-no" onclick="closeConfirm()">再想想</button>
-      <button class="confirm-yes" onclick="doCheckIn()">✓ 确认打卡</button>
-    </div>
-  </div>
-</div>
+<div id="emptyState" class="empty-state">未找到所选日期的任务记录</div>
 
-<!-- TOAST -->
-<div class="toast" id="toast"></div>
+<button id="saveBtn" class="fab-save" onclick="syncDataToCloud()">🔄 正在连接云端...</button>
 
 <script>
-// ──────────────────────────────────────────────
-// DATA & CONSTANTS
-// ──────────────────────────────────────────────
+    // 关键修改：替换为正确的 Secret Key 和 默认 API 安全码
+    Bmob.initialize("0e505e7e2db6c121", "123456");
 
-const PERIOD_LABEL = {
-  1:'第1节', 2:'第2节', 3:'第3节', 4:'第4节',
-  5:'第5节', 6:'第6节', 7:'第7节',
-  8:'晚自习①', 9:'晚自习②'
-};
-const PERIOD_SHORT = {
-  1:'1', 2:'2', 3:'3', 4:'4', 5:'5', 6:'6', 7:'7', 8:'晚①', 9:'晚②'
-};
-const SUBJECTS = ['市场营销','基础会计','计算机应用','晚自习','代课'];
-const GRADES   = ['高一','高二','高三'];
-const WKDAY_CN = ['日','一','二','三','四','五','六'];
-const WKDAY_FU = ['周日','周一','周二','周三','周四','周五','周六'];
+    let cloudRecordId = "";
 
-// Subject → chip class + bar class + summary class
-const SUBJ_META = {
-  '市场营销' : { chip:'chip-marketing',  bar:'bm', sum:'c-mkt', emoji:'🛒' },
-  '基础会计' : { chip:'chip-accounting', bar:'ba', sum:'c-acc', emoji:'📒' },
-  '计算机应用': { chip:'chip-computer',   bar:'bc', sum:'c-cmp', emoji:'💻' },
-  '晚自习'   : { chip:'chip-evening',    bar:'be', sum:'c-eve', emoji:'🌙' },
-  '代课'     : { chip:'chip-substitute', bar:'be', sum:'c-eve', emoji:'📝' },
-};
+    function getPageData() {
+        const cards = document.querySelectorAll('#logList .task-card');
+        const data = [];
+        cards.forEach(card => {
+            const tagEl = card.querySelector('.tag');
+            const descEl = card.querySelector('.task-desc');
+            const remarkEl = card.querySelector('.footer-content');
 
-// Weekly recurring template (0=Sun … 6=Sat)  【旧课表，3月25日前】
-const TPL = {
-  0: [],
-  1: [
-    {period:3, subject:'市场营销',  grade:'高二', classNum:4},
-    {period:4, subject:'市场营销',  grade:'高二', classNum:4},
-    {period:5, subject:'市场营销',  grade:'高二', classNum:2},
-    {period:6, subject:'市场营销',  grade:'高二', classNum:2},
-  ],
-  2: [
-    {period:3, subject:'计算机应用', grade:'高三', classNum:3},
-    {period:4, subject:'计算机应用', grade:'高三', classNum:3},
-  ],
-  3: [
-    {period:2, subject:'市场营销',  grade:'高二', classNum:4},
-    {period:3, subject:'基础会计', grade:'高一', classNum:1},
-    {period:5, subject:'市场营销',  grade:'高二', classNum:4},
-    {period:6, subject:'市场营销',  grade:'高二', classNum:4},
-    {period:8, subject:'晚自习',   grade:'高一', classNum:2},
-    {period:9, subject:'晚自习',   grade:'高一', classNum:2},
-  ],
-  4: [
-    {period:3, subject:'市场营销',  grade:'高二', classNum:2},
-    {period:5, subject:'基础会计', grade:'高一', classNum:1},
-  ],
-  5: [
-    {period:1, subject:'基础会计', grade:'高三', classNum:1},
-    {period:2, subject:'基础会计', grade:'高三', classNum:1},
-    {period:3, subject:'计算机应用', grade:'高三', classNum:3},
-    {period:4, subject:'计算机应用', grade:'高三', classNum:3},
-    {period:5, subject:'基础会计', grade:'高三', classNum:1},
-    {period:6, subject:'基础会计', grade:'高三', classNum:1},
-    {period:8, subject:'晚自习',   grade:'高一', classNum:3},
-    {period:9, subject:'晚自习',   grade:'高一', classNum:3},
-  ],
-  6: [
-    {period:1, subject:'计算机应用', grade:'高三', classNum:3},
-    {period:2, subject:'计算机应用', grade:'高三', classNum:3},
-    {period:5, subject:'市场营销',  grade:'高三', classNum:1},
-    {period:6, subject:'市场营销',  grade:'高三', classNum:1},
-  ],
-};
-
-// 【新课表，从2026-03-26（周四）起生效】
-const TPL_NEW = {
-  0: [],
-  1: [],
-  2: [
-    {period:3, subject:'市场营销', grade:'高二', classNum:4},
-    {period:4, subject:'市场营销', grade:'高二', classNum:4},
-    {period:5, subject:'基础会计', grade:'高一', classNum:1},
-    {period:6, subject:'基础会计', grade:'高一', classNum:1},
-  ],
-  3: [
-    {period:2, subject:'市场营销', grade:'高二', classNum:4},
-    {period:3, subject:'基础会计', grade:'高一', classNum:1},
-  ],
-  4: [],
-  5: [],
-  6: [],
-};
-
-// 新课表切换日期（含当天起使用新课表）
-const TPL_CUTOVER = '2026-03-26';
-
-// ──────────────────────────────────────────────
-// STATE
-// ──────────────────────────────────────────────
-let weekStart = getWeekStart(new Date());
-let editDate  = null;
-let editRows  = [];
-let pendDate  = null;
-
-// ──────────────────────────────────────────────
-// FIREBASE + STORAGE
-// ──────────────────────────────────────────────
-const firebaseConfig = {
-  apiKey: "AIzaSyDMSnRLauIbEPPHf0WZ4raJ8RKU76aylRQ",
-  authDomain: "keshi-7010c.firebaseapp.com",
-  projectId: "keshi-7010c",
-  storageBucket: "keshi-7010c.firebasestorage.app",
-  messagingSenderId: "401210171294",
-  appId: "1:401210171294:web:b75974a1c665993704808f"
-};
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-const DOC_REF = db.collection('checkins').doc('allData');
-
-let _cache = {}; // 内存缓存，替代 localStorage
-
-function store() { return _cache; }
-
-function save(data) {
-  _cache = data;
-  DOC_REF.set({ tpk: JSON.stringify(data) })
-    .catch(e => console.error('Firebase保存失败:', e));
-}
-
-function getDay(ds) { return _cache[ds] || null; }
-function setDay(ds, rec) { const d = {..._cache}; d[ds] = rec; save(d); }
-
-async function loadFromFirebase() {
-  try {
-    const snap = await DOC_REF.get();
-    if (snap.exists && snap.data().tpk) {
-      _cache = JSON.parse(snap.data().tpk);
-    } else {
-      _cache = {};
+            if(tagEl && descEl && remarkEl) {
+                data.push({
+                    date: card.getAttribute('data-date'),
+                    day: card.querySelector('.day-cell').innerText,
+                    tag: tagEl.innerText,
+                    desc: descEl.innerText,
+                    remark: remarkEl.innerText
+                });
+            }
+        });
+        return data;
     }
-  } catch(e) {
-    console.error('Firebase读取失败:', e);
-    _cache = {};
-  }
-}
 
-function getClasses(ds) {
-  const rec = getDay(ds);
-  if (rec && rec.classes !== undefined) return rec.classes;
-  const dow = new Date(ds + 'T00:00:00').getDay();
-  const tpl = ds >= TPL_CUTOVER ? TPL_NEW : TPL;
-  return clone(tpl[dow] || []);
-}
-function clone(x) { return JSON.parse(JSON.stringify(x)); }
+    async function copyFormattedTask(btnElement) {
+        const card = btnElement.closest('.task-card');
+        const date = card.getAttribute('data-date');
+        const day = card.querySelector('.day-cell').innerText;
+        const tag = card.querySelector('.tag').innerText;
+        const desc = card.querySelector('.task-desc').innerText;
 
-// ──────────────────────────────────────────────
-// DATE HELPERS
-// ──────────────────────────────────────────────
-function getWeekStart(date) {
-  const d = new Date(date);
-  d.setHours(0,0,0,0);
-  const dow = d.getDay();
-  d.setDate(d.getDate() - (dow === 0 ? 6 : dow - 1)); // Monday first
-  return d;
-}
-function fmt(date) {
-  const y = date.getFullYear();
-  const m = String(date.getMonth()+1).padStart(2,'0');
-  const d = String(date.getDate()).padStart(2,'0');
-  return `${y}-${m}-${d}`;
-}
-function todayStr() { return fmt(new Date()); }
-function isToday(ds) { return ds === todayStr(); }
-function isPast(ds) { return ds < todayStr(); }
+        const textToCopy = `今日招生任务报备：\n日期：${date} (${day})\n【${tag}】\n${desc}`;
 
-// ──────────────────────────────────────────────
-// HEADER
-// ──────────────────────────────────────────────
-function updateHeader() {
-  const n = new Date();
-  document.getElementById('hDate').textContent = `${n.getMonth()+1}月${n.getDate()}日`;
-  document.getElementById('hDay').textContent  = WKDAY_FU[n.getDay()];
-}
-
-// ──────────────────────────────────────────────
-// WEEK VIEW
-// ──────────────────────────────────────────────
-function changeWeek(delta) {
-  const d = new Date(weekStart);
-  d.setDate(d.getDate() + delta*7);
-  weekStart = d;
-  renderWeek();
-}
-function goNow() { weekStart = getWeekStart(new Date()); renderWeek(); }
-
-// Week 1 anchor: March 2, 2026 (Monday)
-const WEEK1_START = new Date('2026-03-02T00:00:00');
-
-function getWeekNumber(mondayDate) {
-  const diff = mondayDate - WEEK1_START;
-  const weekNum = Math.floor(diff / (7 * 864e5)) + 1;
-  return weekNum;
-}
-
-function renderWeek() {
-  const we = new Date(weekStart); we.setDate(we.getDate()+6);
-  const sm = weekStart.getMonth()+1, em = we.getMonth()+1;
-  const sd = weekStart.getDate(), ed = we.getDate();
-  const title = sm === em
-    ? `${weekStart.getFullYear()}年 ${sm}月 ${sd}日 — ${ed}日`
-    : `${weekStart.getFullYear()}年 ${sm}月${sd}日 — ${em}月${ed}日`;
-  document.getElementById('wkTitle').textContent = title;
-
-  const weekNum = getWeekNumber(weekStart);
-  const weekNumLabel = weekNum >= 1 ? ` · 第 ${weekNum} 周` : ` · 第 ${weekNum} 周`;
-
-  const todayWS = fmt(getWeekStart(new Date()));
-  const thisFmt = fmt(weekStart);
-  if (thisFmt === todayWS)
-    document.getElementById('wkSub').textContent = `📍 本周${weekNumLabel}`;
-  else if (weekStart < new Date(todayWS+'T00:00:00')) {
-    const diff = Math.round((new Date(todayWS) - weekStart)/(7*864e5));
-    document.getElementById('wkSub').textContent = `${diff}周前${weekNumLabel}`;
-  } else {
-    const diff = Math.round((weekStart - new Date(todayWS+'T00:00:00'))/(7*864e5));
-    document.getElementById('wkSub').textContent = `${diff}周后${weekNumLabel}`;
-  }
-
-  const grid = document.getElementById('daysGrid');
-  grid.innerHTML = '';
-  for (let i=0; i<7; i++) {
-    const d = new Date(weekStart); d.setDate(d.getDate()+i);
-    grid.appendChild(buildCard(d, fmt(d)));
-  }
-}
-
-function buildCard(date, ds) {
-  const rec      = getDay(ds);
-  const classes  = getClasses(ds);
-  const checked  = rec && rec.checkedIn;
-  const today    = isToday(ds);
-  const hasClass = classes.length > 0;
-  const dow      = date.getDay();
-
-  const div = document.createElement('div');
-  div.className = ['day-card', today?'today':'', checked?'checked':'', !hasClass?'no-class':''].join(' ');
-  div.id = 'card-'+ds;
-
-  const chipRows = hasClass
-    ? classes.map(c => {
-        const m = SUBJ_META[c.subject] || {chip:'chip-evening'};
-        const detail = (!c.grade && !c.classNum) ? ''
-                     : c.subject === '代课' ? `${c.grade}(${c.classNum})代课`
-                     : `${c.grade}(${c.classNum})`;
-        return `<div class="class-chip ${m.chip}">
-          <span class="period-tag">${PERIOD_SHORT[c.period]||c.period}</span>
-          <div>
-            <div class="subj">${c.subject}</div>
-            ${detail ? `<div class="detail">${detail}</div>` : ''}
-          </div>
-        </div>`;
-      }).join('')
-    : '<div class="no-class-msg">今日无课</div>';
-
-  const note = rec && rec.note ? rec.note : '';
-  const noteHtml = note
-    ? `<div class="card-note"><span class="card-note-icon">📝</span>${note.replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>')}</div>`
-    : '';
-
-  div.innerHTML = `
-    <div class="card-head">
-      <div class="card-head-left">
-        <div class="weekday">周${WKDAY_CN[dow]}</div>
-        <div class="day-num">${date.getDate()}</div>
-        <div class="month">${date.getMonth()+1}月</div>
-      </div>
-      ${today ? '<div class="today-badge">今天</div>' : ''}
-    </div>
-    <div class="class-list">${chipRows}</div>
-    ${noteHtml}
-    ${checked && rec.checkedInTime ? `<div class="checkin-time-label">✅ ${rec.checkedInTime} 已打卡</div>` : ''}
-    <div class="card-foot">
-      <button class="btn-checkin ${checked?'done':''}" onclick="handleCheckIn('${ds}')" ${!hasClass?'disabled':''}>
-        ${checked ? '✓ 已打卡' : '📍 打卡'}
-      </button>
-      <button class="btn-edit" onclick="openEdit('${ds}')" title="编辑课程 / 备注">✏️</button>
-    </div>
-    <div class="stamp-overlay"><div class="stamp">已<br>完成</div></div>
-  `;
-  return div;
-}
-
-function refreshCard(ds) {
-  const old = document.getElementById('card-'+ds);
-  if (!old) return;
-  const d = new Date(ds+'T00:00:00');
-  old.replaceWith(buildCard(d, ds));
-}
-
-// ──────────────────────────────────────────────
-// CHECK-IN
-// ──────────────────────────────────────────────
-function handleCheckIn(ds) {
-  const rec = getDay(ds);
-  if (rec && rec.checkedIn) {
-    if (confirm('已经打卡，是否撤销打卡？')) {
-      rec.checkedIn = false; rec.checkedInTime = null;
-      setDay(ds, rec);
-      refreshCard(ds);
-      toast('已撤销打卡', 'warn');
-    }
-    return;
-  }
-  pendDate = ds;
-  const date = new Date(ds+'T00:00:00');
-  const classes = getClasses(ds);
-  const dateLabel = `${date.getMonth()+1}月${date.getDate()}日`;
-  document.getElementById('cEmoji').textContent = isToday(ds) ? '🎉' : isPast(ds) ? '📅' : '📌';
-  document.getElementById('cTitle').textContent = `${dateLabel}（周${WKDAY_CN[date.getDay()]}）`;
-  document.getElementById('cDesc').innerHTML =
-    `今日共有 <strong>${classes.length}</strong> 节课程安排<br>确认全部完成并打卡记录？`;
-  document.getElementById('confirmOverlay').classList.add('open');
-}
-
-function doCheckIn() {
-  if (!pendDate) return;
-  const n = new Date();
-  const t = `${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}`;
-  let rec = getDay(pendDate) || {};
-  rec.checkedIn = true;
-  rec.checkedInTime = t;
-  if (!rec.classes) {
-    const dow = new Date(pendDate+'T00:00:00').getDay();
-    const tpl = pendDate >= TPL_CUTOVER ? TPL_NEW : TPL;
-    rec.classes = clone(tpl[dow]||[]);
-  }
-  setDay(pendDate, rec);
-  closeConfirm();
-  refreshCard(pendDate);
-  setTimeout(() => {
-    const card = document.getElementById('card-'+pendDate);
-    if (card) { const s = card.querySelector('.stamp'); if (s) s.classList.add('stamp-pop'); }
-    toast('✅ 打卡成功！', 'success');
-    pendDate = null;
-  }, 120);
-}
-
-function closeConfirm() { document.getElementById('confirmOverlay').classList.remove('open'); }
-
-// ──────────────────────────────────────────────
-// EDIT MODAL
-// ──────────────────────────────────────────────
-function openEdit(ds) {
-  editDate = ds;
-  editRows = clone(getClasses(ds));
-  const rec = getDay(ds);
-  const date = new Date(ds+'T00:00:00');
-  document.getElementById('mTitle').textContent = `编辑课程 — ${date.getMonth()+1}月${date.getDate()}日`;
-  document.getElementById('mSub').textContent   = `周${WKDAY_CN[date.getDay()]} 实际课程安排`;
-  document.getElementById('editNote').value = (rec && rec.note) ? rec.note : '';
-  renderEditList();
-  document.getElementById('editOverlay').classList.add('open');
-}
-
-function renderEditList() {
-  const list = document.getElementById('editList');
-  if (!editRows.length) {
-    list.innerHTML = '<div style="text-align:center;color:var(--gray);padding:20px 0;font-size:14px;">暂无课程，点击下方添加</div>';
-    return;
-  }
-  list.innerHTML = editRows.map((c, i) => `
-    <div class="edit-row">
-      <select class="sel-period" onchange="upRow(${i},'period',+this.value)">
-        ${Object.entries(PERIOD_LABEL).map(([p,l]) =>
-          `<option value="${p}" ${c.period==p?'selected':''}>${l}</option>`).join('')}
-      </select>
-      <select class="sel-subject" onchange="upRow(${i},'subject',this.value)">
-        ${SUBJECTS.map(s => `<option value="${s}" ${c.subject===s?'selected':''}>${s}</option>`).join('')}
-      </select>
-      <select class="sel-grade" onchange="upRow(${i},'grade',this.value)">
-        <option value="">--</option>
-        ${GRADES.map(g => `<option value="${g}" ${c.grade===g?'selected':''}>${g}</option>`).join('')}
-      </select>
-      <input class="inp-class" type="number" min="1" max="30" placeholder="班"
-        value="${c.classNum||''}" onchange="upRow(${i},'classNum',+this.value||0)">
-      <button class="btn-del" onclick="delRow(${i})">✕</button>
-    </div>
-  `).join('');
-}
-
-function upRow(i, k, v) { editRows[i][k] = v; }
-function delRow(i) { editRows.splice(i,1); renderEditList(); }
-function addRow() {
-  editRows.push({period:1, subject:'市场营销', grade:'高二', classNum:1});
-  renderEditList();
-}
-
-function saveEdit() {
-  editRows.sort((a,b)=>a.period-b.period);
-  let rec = getDay(editDate) || {};
-  rec.classes = clone(editRows);
-  rec.note = document.getElementById('editNote').value.trim();
-  setDay(editDate, rec);
-  closeEdit();
-  refreshCard(editDate);
-  toast('✅ 课程已保存', 'success');
-}
-function closeEdit() { document.getElementById('editOverlay').classList.remove('open'); editDate=null; }
-
-// Close overlays on bg click
-document.getElementById('editOverlay').addEventListener('click', function(e){ if(e.target===this) closeEdit(); });
-document.getElementById('confirmOverlay').addEventListener('click', function(e){ if(e.target===this) closeConfirm(); });
-
-// ──────────────────────────────────────────────
-// DATE PRESETS
-// ──────────────────────────────────────────────
-function setDatePreset(type) {
-  const today = new Date();
-  today.setHours(0,0,0,0);
-  let s, e;
-  if (type === 'week') {
-    s = getWeekStart(today);
-    e = new Date(s); e.setDate(e.getDate()+6);
-  } else if (type === 'lastweek') {
-    e = new Date(getWeekStart(today)); e.setDate(e.getDate()-1);
-    s = getWeekStart(e);
-  } else if (type === 'month') {
-    s = new Date(today.getFullYear(), today.getMonth(), 1);
-    e = new Date(today.getFullYear(), today.getMonth()+1, 0);
-  } else if (type === 'lastmonth') {
-    s = new Date(today.getFullYear(), today.getMonth()-1, 1);
-    e = new Date(today.getFullYear(), today.getMonth(), 0);
-  } else {
-    const days = +type;
-    e = new Date(today);
-    s = new Date(today); s.setDate(s.getDate() - days + 1);
-  }
-  document.getElementById('sStart').value = fmt(s);
-  document.getElementById('sEnd').value   = fmt(e);
-  // Highlight active preset button
-  document.querySelectorAll('.sf-preset').forEach(b => b.classList.remove('active'));
-  event.target.classList.add('active');
-}
-
-// Clear active preset if user manually edits date inputs
-['sStart','sEnd'].forEach(id => {
-  document.getElementById(id).addEventListener('change', () => {
-    document.querySelectorAll('.sf-preset').forEach(b => b.classList.remove('active'));
-  });
-});
-
-// ──────────────────────────────────────────────
-// FILTER CHIP STATE  (multi-select)
-// ──────────────────────────────────────────────
-// Each group stores a Set of selected values; 'all' means no filter.
-const chipState = {
-  chipSubject: new Set(['all']),
-  chipGrade:   new Set(['all']),
-  chipWeekday: new Set(['all']),
-  chipPeriod:  new Set(['all']),
-  chipClass:   new Set(['all']),
-};
-
-function initChips() {
-  ['chipSubject','chipGrade','chipWeekday','chipPeriod','chipClass'].forEach(id => {
-    document.getElementById(id).addEventListener('click', function(e) {
-      const chip = e.target.closest('.sf-chip');
-      if (!chip) return;
-      const val = chip.dataset.val;
-      const set = chipState[id];
-
-      if (val === 'all') {
-        // Click "全部" → reset to all-only
-        set.clear(); set.add('all');
-      } else {
-        set.delete('all');
-        if (set.has(val)) {
-          set.delete(val);
-          if (set.size === 0) set.add('all'); // nothing left → back to all
-        } else {
-          set.add(val);
+        try {
+            await navigator.clipboard.writeText(textToCopy);
+            const originalHTML = btnElement.innerHTML;
+            btnElement.innerHTML = "✅ 已复制";
+            btnElement.classList.add('success');
+            setTimeout(() => {
+                btnElement.innerHTML = originalHTML;
+                btnElement.classList.remove('success');
+            }, 2000);
+        } catch (err) {
+            console.error("复制失败:", err);
+            alert("手机系统限制，无法自动复制，请手动长按描述文字复制。");
         }
-      }
-      // Sync DOM
-      this.querySelectorAll('.sf-chip').forEach(c => {
-        c.classList.toggle('active', set.has(c.dataset.val));
-      });
-      updateActiveTags();
-    });
-  });
-}
+    }
 
-const WEEKDAY_NAMES = ['','一','二','三','四','五','六'];
-const PERIOD_NAMES  = {1:'第1节',2:'第2节',3:'第3节',4:'第4节',5:'第5节',6:'第6节',7:'第7节',8:'晚自习①',9:'晚自习②'};
+    function renderPage(data) {
+        const list = document.getElementById('logList');
+        list.innerHTML = "";
+        data.forEach(item => {
+            const html = `
+                <div class="task-card" data-date="${item.date}">
+                    <div class="card-header">
+                        <span class="date-cell">${item.date}</span>
+                        <span class="day-cell">${item.day}</span>
+                    </div>
+                    <div class="card-body">
+                        <span class="tag" contenteditable="true">${item.tag}</span>
+                        <div class="task-desc" contenteditable="true">${item.desc}</div>
+                        <button class="copy-text-btn" onclick="copyFormattedTask(this)">📋 复制报备文字</button>
+                    </div>
+                    <div class="card-footer">
+                        <span class="footer-label">📌 备注:</span>
+                        <span class="footer-content" contenteditable="true">${item.remark}</span>
+                    </div>
+                </div>
+            `;
+            list.insertAdjacentHTML('beforeend', html);
+        });
+    }
 
-function updateActiveTags() {
-  const defs = {
-    chipSubject: { prefix:'科目', fmt: v => v },
-    chipGrade:   { prefix:'年级', fmt: v => v },
-    chipWeekday: { prefix:'星期', fmt: v => '周'+WEEKDAY_NAMES[+v] },
-    chipPeriod:  { prefix:'节次', fmt: v => PERIOD_NAMES[+v] || v },
-    chipClass:   { prefix:'班级', fmt: v => v+'班' },
-  };
-  const tags = [];
-  for (const [id, cfg] of Object.entries(defs)) {
-    const set = chipState[id];
-    if (set.has('all')) continue;
-    const vals = [...set].map(cfg.fmt).join('、');
-    tags.push(cfg.prefix + '：' + vals);
-  }
-  const el = document.getElementById('sfActiveTags');
-  el.innerHTML = tags.length
-    ? tags.map(t => `<span class="sf-tag">✦ ${t}</span>`).join('')
-    : '<span style="font-size:12px;color:var(--gray);font-style:italic">当前：显示全部条件</span>';
-}
+    async function loadCloudData() {
+        const btn = document.getElementById('saveBtn');
+        const query = Bmob.Query("GlobalTaskLog");
+        
+        try {
+            const res = await query.find();
+            if (res.length === 0) {
+                // 如果数据库空，用默认数据直接渲染并上传初始化
+                const list = document.getElementById('logList');
+                list.innerHTML = document.getElementById('defaultData').innerHTML;
+                
+                const defaultData = getPageData();
+                const insertQuery = Bmob.Query("GlobalTaskLog");
+                insertQuery.set("tasksJson", JSON.stringify(defaultData));
+                const insertRes = await insertQuery.save();
+                cloudRecordId = insertRes.objectId;
+                btn.innerText = "💾 保存并同步";
+            } else {
+                cloudRecordId = res[0].objectId;
+                const onlineData = JSON.parse(res[0].tasksJson);
+                renderPage(onlineData);
+                btn.innerText = "💾 保存并同步";
+            }
+        } catch (err) {
+            console.error("连接数据库失败:", err);
+            btn.innerText = "❌ 连接失败";
+            alert("被 Bmob 拦截了！请务必去 Bmob 后台的“安全设置”里，把“Web 安全域名”填入星号 * 然后保存。");
+            // 加载失败时显示默认内容以防白屏
+            const list = document.getElementById('logList');
+            list.innerHTML = document.getElementById('defaultData').innerHTML;
+        }
+    }
 
-function resetFilters() {
-  ['chipSubject','chipGrade','chipWeekday','chipPeriod','chipClass'].forEach(id => {
-    const set = chipState[id];
-    set.clear(); set.add('all');
-    const el = document.getElementById(id);
-    el.querySelectorAll('.sf-chip').forEach(c => c.classList.remove('active'));
-    el.querySelector('[data-val="all"]').classList.add('active');
-  });
-  document.querySelectorAll('.sf-preset').forEach(b => b.classList.remove('active'));
-  updateActiveTags();
-  toast('↺ 筛选条件已重置', '');
-}
+    async function syncDataToCloud() {
+        if (!cloudRecordId) {
+            alert("数据尚未完全加载或连接失败，无法保存！");
+            return;
+        }
+        
+        const btn = document.getElementById('saveBtn');
+        btn.innerText = "⏳ 正在上传...";
+        
+        const currentData = getPageData();
+        const query = Bmob.Query("GlobalTaskLog");
+        
+        try {
+            query.set("id", cloudRecordId); 
+            query.set("tasksJson", JSON.stringify(currentData));
+            await query.save();
+            
+            btn.innerText = "✅ 同步成功！";
+            setTimeout(() => {
+                btn.innerText = "💾 保存并同步";
+            }, 2000);
+        } catch (err) {
+            console.error("同步失败:", err);
+            alert("保存失败，请检查网络或后台白名单设置。");
+            btn.innerText = "💾 保存并同步";
+        }
+    }
 
-// ──────────────────────────────────────────────
-// STATISTICS
-// ──────────────────────────────────────────────
-function runStats() {
-  const start = document.getElementById('sStart').value;
-  const end   = document.getElementById('sEnd').value;
+    window.onload = () => {
+        loadCloudData();
+    };
 
-  if (!start || !end) { toast('⚠️ 请选择日期范围', 'warn'); return; }
-  if (start > end)    { toast('⚠️ 开始日期不能晚于结束日期', 'warn'); return; }
+    const getToday = () => {
+        const d = new Date();
+        return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    };
 
-  const fsSubj    = chipState.chipSubject;
-  const fsGrade   = chipState.chipGrade;
-  const fsWeekday = chipState.chipWeekday;
-  const fsPeriod  = chipState.chipPeriod;
-  const fsClass   = chipState.chipClass;
+    const parseDate = (dateStr) => {
+        const parts = dateStr.split('-');
+        return new Date(parts[0], parts[1] - 1, parts[2]);
+    };
 
-  const data = store();
-  const rows = [];
-  let totalPeriods = 0, checkedDays = 0;
-  const subTotals = {};
+    function updateActiveButton(clickedBtn) {
+        const buttons = document.querySelectorAll('.filter-group button');
+        buttons.forEach(btn => btn.classList.remove('active'));
+        if(clickedBtn) clickedBtn.classList.add('active');
+    }
 
-  const d0 = new Date(start+'T00:00:00');
-  const d1 = new Date(end+'T00:00:00');
+    function filterData(type, btnElement) {
+        updateActiveButton(btnElement);
+        const today = getToday();
+        const cards = document.querySelectorAll('#logList .task-card');
+        let visibleCount = 0;
 
-  for (let d = new Date(d0); d <= d1; d.setDate(d.getDate()+1)) {
-    // Weekday multi-filter
-    if (!fsWeekday.has('all') && !fsWeekday.has(String(d.getDay()))) continue;
+        const dayOfWeek = today.getDay() || 7; 
+        const weekStart = new Date(today);
+        weekStart.setDate(today.getDate() - dayOfWeek + 1);
+        const weekEnd = new Date(weekStart);
+        weekEnd.setDate(weekStart.getDate() + 6);
 
-    const ds = fmt(d);
-    const rec = data[ds];
-    if (!rec || !rec.checkedIn) continue;
-    checkedDays++;
-    const cls = rec.classes || clone(TPL[d.getDay()]||[]);
+        const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+        const monthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0);
 
-    let filtered = cls;
-    if (!fsSubj.has('all'))   filtered = filtered.filter(c => fsSubj.has(c.subject));
-    if (!fsGrade.has('all'))  filtered = filtered.filter(c => fsGrade.has(c.grade));
-    if (!fsPeriod.has('all')) filtered = filtered.filter(c => fsPeriod.has(String(c.period)));
-    if (!fsClass.has('all'))  filtered = filtered.filter(c => fsClass.has(String(c.classNum)));
+        cards.forEach(card => {
+            const rowDate = parseDate(card.getAttribute('data-date'));
+            let show = false;
+            if (type === 'all') show = true;
+            else if (type === 'week') show = rowDate >= weekStart && rowDate <= weekEnd;
+            else if (type === 'month') show = rowDate >= monthStart && rowDate <= monthEnd;
 
-    if (!filtered.length) continue;
-    const dayCounts = {};
-    filtered.forEach(c => {
-      dayCounts[c.subject]  = (dayCounts[c.subject]||0)+1;
-      subTotals[c.subject]  = (subTotals[c.subject]||0)+1;
-      totalPeriods++;
-    });
-    rows.push({ ds, dow:d.getDay(), classes:filtered, count:filtered.length, dayCounts, note: rec.note||'' });
-  }
+            card.style.display = show ? 'block' : 'none';
+            if (show) visibleCount++;
+        });
 
-  renderStats(rows, totalPeriods, subTotals, checkedDays);
-}
+        document.getElementById('emptyState').style.display = visibleCount === 0 ? 'block' : 'none';
+    }
 
-function renderStats(rows, total, subTotals, days) {
-  const out = document.getElementById('statsOutput');
+    function filterByDate() {
+        const startInput = document.getElementById('startDate').value;
+        const endInput = document.getElementById('endDate').value;
+        if (!startInput || !endInput) {
+            alert('请选择完整的开始和结束日期');
+            return;
+        }
+        const start = parseDate(startInput);
+        const end = parseDate(endInput);
+        updateActiveButton(null);
+        const cards = document.querySelectorAll('#logList .task-card');
+        let visibleCount = 0;
 
-  if (!rows.length) {
-    out.innerHTML = `<div class="empty">
-      <span class="e-icon">🔍</span>
-      <p>所选范围内暂无打卡记录</p>
-      <small>请先完成打卡，或选择其他日期范围</small>
-    </div>`;
-    return;
-  }
+        cards.forEach(card => {
+            const rowDate = parseDate(card.getAttribute('data-date'));
+            const show = rowDate >= start && rowDate <= end;
+            card.style.display = show ? 'block' : 'none';
+            if (show) visibleCount++;
+        });
 
-  // Summary cards
-  const sumCards = Object.entries(subTotals).map(([s,n],i) => {
-    const m = SUBJ_META[s] || {sum:'c-eve', emoji:'📝'};
-    return `<div class="sum-card ${m.sum}" style="animation-delay:${0.1+i*0.06}s">
-      <div class="sum-num">${n}</div>
-      <div class="sum-label">${m.emoji} ${s}</div>
-    </div>`;
-  }).join('');
-
-  const summaryHtml = `
-    <div class="summary-grid" style="margin-bottom:20px">
-      <div class="sum-card c-total" style="animation-delay:0.04s">
-        <div class="sum-num">${total}</div>
-        <div class="sum-label">📚 总课时</div>
-      </div>
-      <div class="sum-card c-days" style="animation-delay:0.08s">
-        <div class="sum-num">${days}</div>
-        <div class="sum-label">📅 打卡天数</div>
-      </div>
-      ${sumCards}
-    </div>
-  `;
-
-  // Bar chart
-  const maxN = Math.max(...Object.values(subTotals), 1);
-  const barRows = Object.entries(subTotals).map(([s,n]) => {
-    const m = SUBJ_META[s] || {bar:'be', emoji:'📝'};
-    const pct = Math.round(n/maxN*100);
-    return `<div class="bar-row">
-      <div class="bar-lbl">${s}</div>
-      <div class="bar-track">
-        <div class="bar-fill ${m.bar}" style="width:0%" data-w="${pct}"><span>${n}</span></div>
-      </div>
-      <div class="bar-cnt">${n} 节</div>
-    </div>`;
-  }).join('');
-
-  const barHtml = `
-    <div class="chart-card" style="margin-bottom:20px;animation-delay:0.28s">
-      <div class="chart-card-head">📊 各科课时分布</div>
-      <div class="bar-chart-body">${barRows}</div>
-    </div>
-  `;
-
-  // Detail table
-  const tableRows = rows.map((r,i) => {
-    const date = new Date(r.ds+'T00:00:00');
-    const pills = Object.entries(r.dayCounts).map(([s,n]) => {
-      const m = SUBJ_META[s] || {chip:'chip-evening'};
-      return `<span class="subject-pill ${m.chip}">${s}×${n}</span>`;
-    }).join('');
-    return `<tr style="animation:cardIn 0.3s ease both;animation-delay:${0.32+i*0.04}s">
-      <td>
-        <div style="font-weight:700;font-size:15px">${date.getMonth()+1}月${date.getDate()}日</div>
-        <div style="font-size:11px;color:var(--gray);margin-top:2px">周${WKDAY_CN[date.getDay()]}</div>
-      </td>
-      <td><div class="period-badge">${r.count}</div></td>
-      <td>
-        <div class="subject-pills">${pills}</div>
-        ${r.note ? `<div style="margin-top:6px;font-size:11px;color:#92400e;background:var(--amber-pale);padding:4px 8px;border-radius:6px;border-left:2px solid var(--amber)">📝 ${r.note.replace(/</g,'&lt;')}</div>` : ''}
-      </td>
-    </tr>`;
-  }).join('');
-
-  const tableHtml = `
-    <div class="detail-card" style="animation-delay:0.36s">
-      <div class="detail-head">📋 每日课时明细</div>
-      <table class="dtable">
-        <thead><tr><th>日期</th><th>课时</th><th>科目明细 / 备注</th></tr></thead>
-        <tbody>${tableRows}</tbody>
-      </table>
-    </div>
-  `;
-
-  out.innerHTML = summaryHtml + barHtml + tableHtml;
-
-  // Animate bars after render
-  setTimeout(() => {
-    out.querySelectorAll('.bar-fill').forEach(b => {
-      b.style.width = b.dataset.w + '%';
-    });
-  }, 80);
-}
-
-// ──────────────────────────────────────────────
-// TABS
-// ──────────────────────────────────────────────
-function switchTab(name) {
-  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-  document.querySelector(`[data-tab="${name}"]`).classList.add('active');
-  document.getElementById('tab-'+name).classList.add('active');
-}
-
-// ──────────────────────────────────────────────
-// TOAST
-// ──────────────────────────────────────────────
-let _toastTm;
-function toast(msg, type='') {
-  const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.className = `toast ${type} show`;
-  clearTimeout(_toastTm);
-  _toastTm = setTimeout(() => el.classList.remove('show'), 2600);
-}
-
-// ──────────────────────────────────────────────
-// INIT
-// ──────────────────────────────────────────────
-(async function init() {
-  document.getElementById('loadingOverlay').style.display = 'flex';
-  updateHeader();
-  setInterval(updateHeader, 60000);
-  initChips();
-  updateActiveTags();
-  await loadFromFirebase();
-  document.getElementById('loadingOverlay').style.display = 'none';
-  renderWeek();
-  const ws = getWeekStart(new Date());
-  const we = new Date(ws); we.setDate(we.getDate()+6);
-  document.getElementById('sStart').value = fmt(ws);
-  document.getElementById('sEnd').value   = fmt(we);
-  // Highlight 本周 preset by default
-  const presets = document.querySelectorAll('.sf-preset');
-  if (presets.length) presets[0].classList.add('active');
-})();
+        document.getElementById('emptyState').style.display = visibleCount === 0 ? 'block' : 'none';
+    }
 </script>
+
 </body>
 </html>

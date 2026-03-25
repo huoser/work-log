@@ -24,8 +24,7 @@
             margin: 0;
             padding: 0;
             -webkit-font-smoothing: antialiased;
-            /* 恢复正常的底部安全距离 */
-            padding-bottom: env(safe-area-inset-bottom); 
+            padding-bottom: calc(env(safe-area-inset-bottom) + 40px); 
         }
 
         .header {
@@ -39,7 +38,6 @@
             z-index: 100;
         }
 
-        /* 顶部标题和保存按钮同行显示 */
         .header-top {
             display: flex;
             justify-content: space-between;
@@ -54,7 +52,6 @@
             letter-spacing: -0.003em;
         }
 
-        /* 顶部小巧的保存按钮 */
         .header-save-btn {
             background-color: var(--apple-blue);
             color: white;
@@ -125,7 +122,7 @@
         }
 
         .task-list {
-            padding: 20px 16px;
+            padding: 20px 16px 0 16px;
             max-width: 600px;
             margin: 0 auto;
         }
@@ -163,83 +160,74 @@
         .card-body {
             line-height: 1.6;
             font-size: 15px;
-            position: relative; 
         }
 
         .tag {
             display: inline-block;
-            padding: 2px 8px;
-            border-radius: 4px;
+            padding: 3px 10px;
+            border-radius: 6px;
             font-size: 12px;
             font-weight: 600;
             background-color: rgba(0, 113, 227, 0.1);
             color: var(--apple-blue);
             margin-bottom: 8px;
-            outline: none;
         }
 
         .task-desc {
             color: var(--apple-text-main);
-            outline: none;
             min-height: 24px;
-            padding-bottom: 24px; 
+            /* 文本不再允许直接编辑，只做展示 */
+            word-break: break-all;
         }
         
-        .copy-text-btn {
-            position: absolute;
-            bottom: -8px; 
-            right: -8px;
+        /* 全新设计的底部操作栏 */
+        .card-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 16px;
+            padding-top: 12px;
+            border-top: 1px dashed #ebebeb;
+        }
+
+        .action-btn {
             background-color: transparent;
-            color: var(--apple-blue);
             border: none;
-            padding: 8px;
-            font-size: 12px;
-            font-weight: 500;
+            padding: 6px 14px;
+            font-size: 13px;
+            font-weight: 600;
             cursor: pointer;
-            -webkit-tap-highlight-color: transparent;
-            opacity: 0.8;
+            border-radius: 8px;
             transition: all 0.2s ease;
             display: flex;
             align-items: center;
             gap: 4px;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        .copy-text-btn:active {
-            opacity: 1;
-            transform: scale(0.96);
+        .edit-btn {
+            color: var(--apple-text-sub);
+            background: #f0f0f2;
         }
+        .edit-btn:active { transform: scale(0.95); background: #e0e0e0; }
 
-        .copy-text-btn.success {
-            color: var(--apple-green);
-            opacity: 1;
+        .copy-btn {
+            color: var(--apple-blue);
+            background: rgba(0, 113, 227, 0.1);
         }
+        .copy-btn:active { transform: scale(0.95); background: rgba(0, 113, 227, 0.2); }
+        .copy-btn.success { background: #e4f8eb; color: var(--apple-green); }
 
-        [contenteditable="true"]:focus {
-            background-color: #f0f8ff;
-            border-radius: 4px;
-            padding: 2px 4px;
-            margin: -2px -4px;
-        }
-
-        .card-footer {
-            margin-top: 12px;
-            padding-top: 12px;
-            border-top: 1px dashed #ebebeb;
+        .card-remark {
             font-size: 13px;
             color: var(--apple-text-sub);
-            display: flex;
-            gap: 6px;
-        }
-
-        .footer-label {
-            font-weight: 500;
-            white-space: nowrap;
-        }
-
-        .footer-content {
-            outline: none;
-            flex-grow: 1;
-            min-height: 18px;
+            margin-top: 12px;
+            background: #fafafa;
+            padding: 8px 12px;
+            border-radius: 8px;
+            display: inline-block;
+            width: 100%;
+            box-sizing: border-box;
         }
 
         .empty-state {
@@ -249,6 +237,66 @@
             font-size: 15px;
             display: none;
         }
+
+        /* 苹果风格丝滑弹窗设计 */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+            z-index: 2000;
+            display: flex; justify-content: center; align-items: center;
+            opacity: 0; visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+
+        .modal-box {
+            background: #fff;
+            width: 88%; max-width: 400px;
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            /* 弹性缩放动画 */
+            transform: scale(0.9) translateY(20px);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .modal-overlay.active .modal-box { transform: scale(1) translateY(0); opacity: 1; }
+
+        .modal-box h3 { margin: 0 0 16px 0; font-size: 18px; text-align: center; }
+        .modal-box label { font-size: 12px; color: var(--apple-text-sub); margin-bottom: 6px; display: block; font-weight: 500;}
+        
+        .modal-box input, .modal-box textarea, .modal-box select {
+            width: 100%; padding: 12px; border: 1px solid var(--apple-border);
+            border-radius: 12px; font-size: 15px; font-family: inherit; box-sizing: border-box;
+            margin-bottom: 16px; outline: none; transition: all 0.2s;
+            background: #fafafa; color: var(--apple-text-main);
+            -webkit-appearance: none; /* 去除原生丑陋样式 */
+        }
+        .modal-box input:focus, .modal-box textarea:focus, .modal-box select:focus {
+            border-color: var(--apple-blue); background: #fff;
+            box-shadow: 0 0 0 3px rgba(0,113,227,0.15);
+        }
+
+        .modal-btns { display: flex; gap: 12px; margin-top: 8px; }
+        .modal-btn { 
+            flex: 1; padding: 12px; border-radius: 12px; font-size: 15px; font-weight: 600; 
+            border: none; cursor: pointer; transition: all 0.2s; -webkit-tap-highlight-color: transparent;
+        }
+        .btn-cancel { background: #f0f0f2; color: var(--apple-text-main); }
+        .btn-cancel:active { background: #e0e0e0; }
+        .btn-confirm { background: var(--apple-blue); color: #fff; }
+        .btn-confirm:active { background: #005bb5; }
+        
+        /* 新增任务大按钮 */
+        .add-task-container { text-align: center; padding: 20px 16px 40px 16px; }
+        .add-task-btn {
+            background: transparent; border: 2px dashed var(--apple-blue); color: var(--apple-blue);
+            padding: 12px 24px; border-radius: 980px; font-size: 15px; font-weight: 600;
+            cursor: pointer; transition: all 0.2s; -webkit-tap-highlight-color: transparent;
+        }
+        .add-task-btn:active { background: rgba(0, 113, 227, 0.1); transform: scale(0.96); }
+
     </style>
 </head>
 <body>
@@ -272,52 +320,170 @@
 </div>
 
 <div class="task-list" id="logList">
-    <div style="text-align: center; padding: 40px; color: var(--apple-text-sub); font-size: 15px;">
+    <div style="text-align: center; padding: 40px; color: var(--apple-text-sub); font-size: 15px;" id="loadingText">
         正在拉取云端任务...
     </div>
 </div>
 
-<div id="defaultData" style="display: none;">
-    <div class="task-card" data-date="2026-03-26">
-        <div class="card-header"><span class="date-cell">2026-03-26</span><span class="day-cell">周四</span></div>
-        <div class="card-body">
-            <span class="tag" contenteditable="true">工作筹备</span>
-            <div class="task-desc" contenteditable="true">招生小组召开首次碰头会。明确组内4人具体分工，梳理现阶段任务目标，制定前期稳步推进的招生策略。</div>
-            <button class="copy-text-btn" onclick="copyFormattedTask(this)">📋 复制报备文字</button>
-        </div>
-        <div class="card-footer"><span class="footer-label">📌 备注:</span><span class="footer-content" contenteditable="true">建议附上会议照片</span></div>
-    </div>
+<div class="add-task-container">
+    <button class="add-task-btn" onclick="openModal(null)">➕ 新增一天日志 (含周末)</button>
 </div>
 
 <div id="emptyState" class="empty-state">未找到所选日期的任务记录</div>
 
+<div id="editModal" class="modal-overlay">
+    <div class="modal-box">
+        <h3 id="modalTitle">编辑任务</h3>
+        <div style="display:flex; gap:12px;">
+            <div style="flex:2;">
+                <label>日期</label>
+                <input type="date" id="editDate">
+            </div>
+            <div style="flex:1;">
+                <label>星期</label>
+                <select id="editDay">
+                    <option value="周一">周一</option><option value="周二">周二</option>
+                    <option value="周三">周三</option><option value="周四">周四</option>
+                    <option value="周五">周五</option><option value="周六">周六</option>
+                    <option value="周日">周日</option>
+                </select>
+            </div>
+        </div>
+        <label>标签 (如：资料研读、放假安排)</label>
+        <input type="text" id="editTag" placeholder="请输入核心标签...">
+        
+        <label>任务内容 (支持多行)</label>
+        <textarea id="editDesc" rows="4" placeholder="请输入具体的工作计划或留空..."></textarea>
+        
+        <label>备注补充</label>
+        <input type="text" id="editRemark" placeholder="如：需拍摄照片 / 无">
+        
+        <div class="modal-btns">
+            <button class="modal-btn btn-cancel" onclick="closeModal()">取消</button>
+            <button class="modal-btn btn-confirm" onclick="saveModal()">确定并保存</button>
+        </div>
+    </div>
+</div>
+
 <script>
-    // 你的 Bmob 秘钥已预填好
+    // 你的 Bmob 秘钥
     Bmob.initialize("0e505e7e2db6c121", "123456");
 
     let cloudRecordId = "";
+    let currentEditingCard = null; // 记录当前正在修改哪个卡片
 
+    // 抓取页面数据
     function getPageData() {
         const cards = document.querySelectorAll('#logList .task-card');
         const data = [];
         cards.forEach(card => {
             const tagEl = card.querySelector('.tag');
             const descEl = card.querySelector('.task-desc');
-            const remarkEl = card.querySelector('.footer-content');
+            const remarkEl = card.querySelector('.card-remark');
 
             if(tagEl && descEl && remarkEl) {
+                // 剔除前缀提取纯净数据
+                let rawRemark = remarkEl.innerText.replace('📌 备注: ', '');
                 data.push({
                     date: card.getAttribute('data-date'),
                     day: card.querySelector('.day-cell').innerText,
                     tag: tagEl.innerText,
                     desc: descEl.innerText,
-                    remark: remarkEl.innerText
+                    remark: rawRemark
                 });
             }
         });
         return data;
     }
 
+    // --- 弹窗相关逻辑 ---
+    function openModal(btnElement) {
+        if (btnElement) {
+            // 编辑现有卡片模式
+            currentEditingCard = btnElement.closest('.task-card');
+            document.getElementById('modalTitle').innerText = "修改日志";
+            
+            document.getElementById('editDate').value = currentEditingCard.getAttribute('data-date');
+            document.getElementById('editDay').value = currentEditingCard.querySelector('.day-cell').innerText;
+            document.getElementById('editTag').value = currentEditingCard.querySelector('.tag').innerText;
+            document.getElementById('editDesc').value = currentEditingCard.querySelector('.task-desc').innerText;
+            
+            let remark = currentEditingCard.querySelector('.card-remark').innerText.replace('📌 备注: ', '');
+            document.getElementById('editRemark').value = remark === '无' ? '' : remark;
+        } else {
+            // 新增卡片模式 (比如新增周末)
+            currentEditingCard = null;
+            document.getElementById('modalTitle').innerText = "新增日志";
+            
+            // 自动填充今天的日期，方便操作
+            let d = new Date();
+            let month = '' + (d.getMonth() + 1), day = '' + d.getDate(), year = d.getFullYear();
+            if (month.length < 2) month = '0' + month;
+            if (day.length < 2) day = '0' + day;
+            document.getElementById('editDate').value = [year, month, day].join('-');
+            
+            const days = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+            document.getElementById('editDay').value = days[d.getDay()];
+            
+            document.getElementById('editTag').value = "周末休息/自行安排";
+            document.getElementById('editDesc').value = "";
+            document.getElementById('editRemark').value = "无";
+        }
+
+        // 呼出弹窗
+        document.getElementById('editModal').classList.add('active');
+    }
+
+    function closeModal() {
+        document.getElementById('editModal').classList.remove('active');
+        currentEditingCard = null;
+    }
+
+    function saveModal() {
+        const date = document.getElementById('editDate').value;
+        const day = document.getElementById('editDay').value;
+        const tag = document.getElementById('editTag').value || '待定';
+        const desc = document.getElementById('editDesc').value;
+        let remark = document.getElementById('editRemark').value || '无';
+
+        if (!date) { alert("日期必须要选哦！"); return; }
+
+        if (currentEditingCard) {
+            // 更新当前DOM
+            currentEditingCard.setAttribute('data-date', date);
+            currentEditingCard.querySelector('.date-cell').innerText = date;
+            currentEditingCard.querySelector('.day-cell').innerText = day;
+            currentEditingCard.querySelector('.tag').innerText = tag;
+            currentEditingCard.querySelector('.task-desc').innerText = desc;
+            currentEditingCard.querySelector('.card-remark').innerText = `📌 备注: ${remark}`;
+        } else {
+            // 生成新卡片DOM (如周末)
+            const html = `
+                <div class="task-card" data-date="${date}">
+                    <div class="card-header">
+                        <span class="date-cell">${date}</span>
+                        <span class="day-cell">${day}</span>
+                    </div>
+                    <div class="card-body">
+                        <span class="tag">${tag}</span>
+                        <div class="task-desc">${desc}</div>
+                        <div class="card-remark">📌 备注: ${remark}</div>
+                        <div class="card-actions">
+                            <button class="action-btn edit-btn" onclick="openModal(this)">✏️ 修改文字</button>
+                            <button class="action-btn copy-btn" onclick="copyFormattedTask(this)">📋 复制报备</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('logList').insertAdjacentHTML('beforeend', html);
+        }
+
+        closeModal();
+        // 自动触发云端同步，体验更丝滑
+        syncDataToCloud();
+    }
+
+    // 复制文字
     async function copyFormattedTask(btnElement) {
         const card = btnElement.closest('.task-card');
         const date = card.getAttribute('data-date');
@@ -338,10 +504,11 @@
             }, 2000);
         } catch (err) {
             console.error("复制失败:", err);
-            alert("手机系统限制，无法自动复制，请手动长按描述文字复制。");
+            alert("手机系统限制，请手动长按文字复制。");
         }
     }
 
+    // 渲染页面
     function renderPage(data) {
         const list = document.getElementById('logList');
         list.innerHTML = "";
@@ -353,13 +520,13 @@
                         <span class="day-cell">${item.day}</span>
                     </div>
                     <div class="card-body">
-                        <span class="tag" contenteditable="true">${item.tag}</span>
-                        <div class="task-desc" contenteditable="true">${item.desc}</div>
-                        <button class="copy-text-btn" onclick="copyFormattedTask(this)">📋 复制报备文字</button>
-                    </div>
-                    <div class="card-footer">
-                        <span class="footer-label">📌 备注:</span>
-                        <span class="footer-content" contenteditable="true">${item.remark}</span>
+                        <span class="tag">${item.tag}</span>
+                        <div class="task-desc">${item.desc}</div>
+                        <div class="card-remark">📌 备注: ${item.remark || '无'}</div>
+                        <div class="card-actions">
+                            <button class="action-btn edit-btn" onclick="openModal(this)">✏️ 修改文字</button>
+                            <button class="action-btn copy-btn" onclick="copyFormattedTask(this)">📋 复制报备</button>
+                        </div>
                     </div>
                 </div>
             `;
@@ -367,6 +534,7 @@
         });
     }
 
+    // 从云端加载
     async function loadCloudData() {
         const btn = document.getElementById('saveBtn');
         const query = Bmob.Query("GlobalTaskLog");
@@ -377,22 +545,40 @@
                 cloudRecordId = res[0].objectId;
                 const onlineData = JSON.parse(res[0].tasksJson);
                 renderPage(onlineData);
-                btn.innerText = "💾 保存";
+                btn.innerText = "💾 手动保存";
+            } else {
+                document.getElementById('loadingText').innerText = "还没有任务记录，请点击下方新增。";
             }
         } catch (err) {
             console.error("连接数据库失败:", err);
             btn.innerText = "❌ 连接失败";
+            document.getElementById('loadingText').innerText = "无法连接云端，请检查网络。";
         }
     }
 
+    // 保存到云端
     async function syncDataToCloud() {
         if (!cloudRecordId) {
-            alert("数据尚未完全加载或连接失败，无法保存！");
+            // 如果连记录ID都没有，说明是全新的空库，需要新建一条
+            const btn = document.getElementById('saveBtn');
+            btn.innerText = "⏳ 上传中";
+            const currentData = getPageData();
+            const query = Bmob.Query("GlobalTaskLog");
+            try {
+                query.set("tasksJson", JSON.stringify(currentData));
+                const res = await query.save();
+                cloudRecordId = res.objectId;
+                btn.innerText = "✅ 成功";
+                setTimeout(() => { btn.innerText = "💾 手动保存"; }, 2000);
+            } catch (err) {
+                alert("首次新建数据失败，请重试！");
+                btn.innerText = "💾 重试保存";
+            }
             return;
         }
         
         const btn = document.getElementById('saveBtn');
-        btn.innerText = "⏳ 上传中";
+        btn.innerText = "⏳ 同步中";
         
         const currentData = getPageData();
         const query = Bmob.Query("GlobalTaskLog");
@@ -402,14 +588,14 @@
             query.set("tasksJson", JSON.stringify(currentData));
             await query.save();
             
-            btn.innerText = "✅ 成功";
+            btn.innerText = "✅ 已云同步";
             setTimeout(() => {
-                btn.innerText = "💾 保存";
+                btn.innerText = "💾 手动保存";
             }, 2000);
         } catch (err) {
             console.error("同步失败:", err);
             alert("保存失败，请检查网络！");
-            btn.innerText = "💾 保存";
+            btn.innerText = "💾 重试保存";
         }
     }
 
@@ -417,6 +603,7 @@
         loadCloudData();
     };
 
+    // ----- 日期筛选逻辑保持不变 -----
     const getToday = () => {
         const d = new Date();
         return new Date(d.getFullYear(), d.getMonth(), d.getDate());

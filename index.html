@@ -9,6 +9,7 @@
         :root {
             --apple-blue: #0071e3;
             --apple-green: #34c759;
+            --apple-red: #ff3b30;
             --apple-bg: #f5f5f7;
             --apple-card-bg: #ffffff;
             --apple-text-main: #1d1d1f;
@@ -176,16 +177,30 @@
         .task-desc {
             color: var(--apple-text-main);
             min-height: 24px;
-            /* 文本不再允许直接编辑，只做展示 */
             word-break: break-all;
         }
+
+        /* 小组成员显示样式 */
+        .card-members {
+            font-size: 13px;
+            color: var(--apple-blue);
+            margin-top: 12px;
+            background: rgba(0, 113, 227, 0.05);
+            padding: 8px 12px;
+            border-radius: 8px;
+            display: inline-block;
+            width: 100%;
+            box-sizing: border-box;
+            font-weight: 500;
+        }
         
-        /* 全新设计的底部操作栏 */
+        /* 底部操作栏 */
         .card-actions {
             display: flex;
             justify-content: flex-end;
-            gap: 10px;
-            margin-top: 16px;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
             padding-top: 12px;
             border-top: 1px dashed #ebebeb;
         }
@@ -193,7 +208,7 @@
         .action-btn {
             background-color: transparent;
             border: none;
-            padding: 6px 14px;
+            padding: 6px 12px;
             font-size: 13px;
             font-weight: 600;
             cursor: pointer;
@@ -218,10 +233,16 @@
         .copy-btn:active { transform: scale(0.95); background: rgba(0, 113, 227, 0.2); }
         .copy-btn.success { background: #e4f8eb; color: var(--apple-green); }
 
+        .delete-btn {
+            color: var(--apple-red);
+            background: rgba(255, 59, 48, 0.1);
+        }
+        .delete-btn:active { transform: scale(0.95); background: rgba(255, 59, 48, 0.2); }
+
         .card-remark {
             font-size: 13px;
             color: var(--apple-text-sub);
-            margin-top: 12px;
+            margin-top: 8px;
             background: #fafafa;
             padding: 8px 12px;
             border-radius: 8px;
@@ -238,7 +259,7 @@
             display: none;
         }
 
-        /* 苹果风格丝滑弹窗设计 */
+        /* 弹窗设计 */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.4);
@@ -256,7 +277,6 @@
             border-radius: 24px;
             padding: 24px;
             box-shadow: 0 20px 40px rgba(0,0,0,0.15);
-            /* 弹性缩放动画 */
             transform: scale(0.9) translateY(20px);
             opacity: 0;
             transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
@@ -271,7 +291,7 @@
             border-radius: 12px; font-size: 15px; font-family: inherit; box-sizing: border-box;
             margin-bottom: 16px; outline: none; transition: all 0.2s;
             background: #fafafa; color: var(--apple-text-main);
-            -webkit-appearance: none; /* 去除原生丑陋样式 */
+            -webkit-appearance: none;
         }
         .modal-box input:focus, .modal-box textarea:focus, .modal-box select:focus {
             border-color: var(--apple-blue); background: #fff;
@@ -288,7 +308,6 @@
         .btn-confirm { background: var(--apple-blue); color: #fff; }
         .btn-confirm:active { background: #005bb5; }
         
-        /* 新增任务大按钮 */
         .add-task-container { text-align: center; padding: 20px 16px 40px 16px; }
         .add-task-btn {
             background: transparent; border: 2px dashed var(--apple-blue); color: var(--apple-blue);
@@ -326,10 +345,27 @@
 </div>
 
 <div class="add-task-container">
-    <button class="add-task-btn" onclick="openModal(null)">➕ 新增一天日志 (含周末)</button>
+    <button class="add-task-btn" onclick="openModal(null)">➕ 新增一天日志</button>
 </div>
 
 <div id="emptyState" class="empty-state">未找到所选日期的任务记录</div>
+
+<div id="defaultData" style="display: none;">
+    <div class="task-card" data-date="2026-03-26">
+        <div class="card-header"><span class="date-cell">2026-03-26</span><span class="day-cell">周四</span></div>
+        <div class="card-body">
+            <span class="tag">工作筹备</span>
+            <div class="task-desc">明确组内4人具体分工，梳理现阶段任务目标，制定准备招生资料。</div>
+            <div class="card-members">👥 小组人员: 雷荣秀、韩笑、宋思伟、刘通</div>
+            <div class="card-remark">📌 备注: 无</div>
+            <div class="card-actions">
+                <button class="action-btn edit-btn" onclick="openModal(this)">✏️ 修改文字</button>
+                <button class="action-btn copy-btn" onclick="copyFormattedTask(this)">📋 复制报备</button>
+                <button class="action-btn delete-btn" onclick="deleteCard(this)">🗑️ 删除</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <div id="editModal" class="modal-overlay">
     <div class="modal-box">
@@ -349,7 +385,7 @@
                 </select>
             </div>
         </div>
-        <label>标签 (如：资料研读、放假安排)</label>
+        <label>标签 (如：工作筹备、实地踩点)</label>
         <input type="text" id="editTag" placeholder="请输入核心标签...">
         
         <label>任务内容 (支持多行)</label>
@@ -370,9 +406,16 @@
     Bmob.initialize("0e505e7e2db6c121", "123456");
 
     let cloudRecordId = "";
-    let currentEditingCard = null; // 记录当前正在修改哪个卡片
+    let currentEditingCard = null; 
 
-    // 抓取页面数据
+    // 获取小组成员的核心逻辑：周二周三没有刘通
+    function getTeamMembers(day) {
+        if (day === '周二' || day === '周三') {
+            return '雷荣秀、韩笑、宋思伟';
+        }
+        return '雷荣秀、韩笑、宋思伟、刘通';
+    }
+
     function getPageData() {
         const cards = document.querySelectorAll('#logList .task-card');
         const data = [];
@@ -382,7 +425,6 @@
             const remarkEl = card.querySelector('.card-remark');
 
             if(tagEl && descEl && remarkEl) {
-                // 剔除前缀提取纯净数据
                 let rawRemark = remarkEl.innerText.replace('📌 备注: ', '');
                 data.push({
                     date: card.getAttribute('data-date'),
@@ -396,10 +438,8 @@
         return data;
     }
 
-    // --- 弹窗相关逻辑 ---
     function openModal(btnElement) {
         if (btnElement) {
-            // 编辑现有卡片模式
             currentEditingCard = btnElement.closest('.task-card');
             document.getElementById('modalTitle').innerText = "修改日志";
             
@@ -411,11 +451,9 @@
             let remark = currentEditingCard.querySelector('.card-remark').innerText.replace('📌 备注: ', '');
             document.getElementById('editRemark').value = remark === '无' ? '' : remark;
         } else {
-            // 新增卡片模式 (比如新增周末)
             currentEditingCard = null;
             document.getElementById('modalTitle').innerText = "新增日志";
             
-            // 自动填充今天的日期，方便操作
             let d = new Date();
             let month = '' + (d.getMonth() + 1), day = '' + d.getDate(), year = d.getFullYear();
             if (month.length < 2) month = '0' + month;
@@ -425,12 +463,11 @@
             const days = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
             document.getElementById('editDay').value = days[d.getDay()];
             
-            document.getElementById('editTag').value = "周末休息/自行安排";
+            document.getElementById('editTag').value = "工作安排";
             document.getElementById('editDesc').value = "";
             document.getElementById('editRemark').value = "无";
         }
 
-        // 呼出弹窗
         document.getElementById('editModal').classList.add('active');
     }
 
@@ -448,16 +485,18 @@
 
         if (!date) { alert("日期必须要选哦！"); return; }
 
+        // 获取动态成员名单
+        const members = getTeamMembers(day);
+
         if (currentEditingCard) {
-            // 更新当前DOM
             currentEditingCard.setAttribute('data-date', date);
             currentEditingCard.querySelector('.date-cell').innerText = date;
             currentEditingCard.querySelector('.day-cell').innerText = day;
             currentEditingCard.querySelector('.tag').innerText = tag;
             currentEditingCard.querySelector('.task-desc').innerText = desc;
+            currentEditingCard.querySelector('.card-members').innerText = `👥 小组人员: ${members}`;
             currentEditingCard.querySelector('.card-remark').innerText = `📌 备注: ${remark}`;
         } else {
-            // 生成新卡片DOM (如周末)
             const html = `
                 <div class="task-card" data-date="${date}">
                     <div class="card-header">
@@ -467,10 +506,12 @@
                     <div class="card-body">
                         <span class="tag">${tag}</span>
                         <div class="task-desc">${desc}</div>
+                        <div class="card-members">👥 小组人员: ${members}</div>
                         <div class="card-remark">📌 备注: ${remark}</div>
                         <div class="card-actions">
                             <button class="action-btn edit-btn" onclick="openModal(this)">✏️ 修改文字</button>
                             <button class="action-btn copy-btn" onclick="copyFormattedTask(this)">📋 复制报备</button>
+                            <button class="action-btn delete-btn" onclick="deleteCard(this)">🗑️ 删除</button>
                         </div>
                     </div>
                 </div>
@@ -479,19 +520,27 @@
         }
 
         closeModal();
-        // 自动触发云端同步，体验更丝滑
         syncDataToCloud();
     }
 
-    // 复制文字
+    // 删除单张卡片
+    function deleteCard(btnElement) {
+        if(confirm('确定要删除这条工作日志吗？删除后将自动同步云端。')) {
+            btnElement.closest('.task-card').remove();
+            syncDataToCloud();
+        }
+    }
+
+    // 更新后的复制文字格式，自带动态成员
     async function copyFormattedTask(btnElement) {
         const card = btnElement.closest('.task-card');
         const date = card.getAttribute('data-date');
-        const day = card.querySelector('.day-cell').innerText;
         const tag = card.querySelector('.tag').innerText;
         const desc = card.querySelector('.task-desc').innerText;
+        // 直接从卡片上提取人员信息，去掉前面的修饰文字
+        const membersText = card.querySelector('.card-members').innerText.replace('👥 小组人员: ', '');
 
-        const textToCopy = `今日招生任务报备：\n日期：${date} (${day})\n【${tag}】\n${desc}`;
+        const textToCopy = `今日招生任务报备：\n日期：${date}\n【${tag}】\n${desc}\n【小组人员】\n${membersText}`;
 
         try {
             await navigator.clipboard.writeText(textToCopy);
@@ -508,11 +557,11 @@
         }
     }
 
-    // 渲染页面
     function renderPage(data) {
         const list = document.getElementById('logList');
         list.innerHTML = "";
         data.forEach(item => {
+            const members = getTeamMembers(item.day);
             const html = `
                 <div class="task-card" data-date="${item.date}">
                     <div class="card-header">
@@ -522,10 +571,12 @@
                     <div class="card-body">
                         <span class="tag">${item.tag}</span>
                         <div class="task-desc">${item.desc}</div>
+                        <div class="card-members">👥 小组人员: ${members}</div>
                         <div class="card-remark">📌 备注: ${item.remark || '无'}</div>
                         <div class="card-actions">
                             <button class="action-btn edit-btn" onclick="openModal(this)">✏️ 修改文字</button>
                             <button class="action-btn copy-btn" onclick="copyFormattedTask(this)">📋 复制报备</button>
+                            <button class="action-btn delete-btn" onclick="deleteCard(this)">🗑️ 删除</button>
                         </div>
                     </div>
                 </div>
@@ -534,7 +585,6 @@
         });
     }
 
-    // 从云端加载
     async function loadCloudData() {
         const btn = document.getElementById('saveBtn');
         const query = Bmob.Query("GlobalTaskLog");
@@ -547,7 +597,9 @@
                 renderPage(onlineData);
                 btn.innerText = "💾 手动保存";
             } else {
-                document.getElementById('loadingText').innerText = "还没有任务记录，请点击下方新增。";
+                const list = document.getElementById('logList');
+                list.innerHTML = document.getElementById('defaultData').innerHTML;
+                syncDataToCloud(); 
             }
         } catch (err) {
             console.error("连接数据库失败:", err);
@@ -556,27 +608,7 @@
         }
     }
 
-    // 保存到云端
     async function syncDataToCloud() {
-        if (!cloudRecordId) {
-            // 如果连记录ID都没有，说明是全新的空库，需要新建一条
-            const btn = document.getElementById('saveBtn');
-            btn.innerText = "⏳ 上传中";
-            const currentData = getPageData();
-            const query = Bmob.Query("GlobalTaskLog");
-            try {
-                query.set("tasksJson", JSON.stringify(currentData));
-                const res = await query.save();
-                cloudRecordId = res.objectId;
-                btn.innerText = "✅ 成功";
-                setTimeout(() => { btn.innerText = "💾 手动保存"; }, 2000);
-            } catch (err) {
-                alert("首次新建数据失败，请重试！");
-                btn.innerText = "💾 重试保存";
-            }
-            return;
-        }
-        
         const btn = document.getElementById('saveBtn');
         btn.innerText = "⏳ 同步中";
         
@@ -584,11 +616,17 @@
         const query = Bmob.Query("GlobalTaskLog");
         
         try {
-            query.set("id", cloudRecordId); 
-            query.set("tasksJson", JSON.stringify(currentData));
-            await query.save();
+            if (!cloudRecordId) {
+                query.set("tasksJson", JSON.stringify(currentData));
+                const res = await query.save();
+                cloudRecordId = res.objectId;
+            } else {
+                query.set("id", cloudRecordId); 
+                query.set("tasksJson", JSON.stringify(currentData));
+                await query.save();
+            }
             
-            btn.innerText = "✅ 已云同步";
+            btn.innerText = "✅ 已同步";
             setTimeout(() => {
                 btn.innerText = "💾 手动保存";
             }, 2000);
@@ -603,7 +641,6 @@
         loadCloudData();
     };
 
-    // ----- 日期筛选逻辑保持不变 -----
     const getToday = () => {
         const d = new Date();
         return new Date(d.getFullYear(), d.getMonth(), d.getDate());
